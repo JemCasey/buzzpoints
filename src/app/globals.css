@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
@@ -24,4 +24,156 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+} */
+
+
+/* this will ensure table rows that are being hovered will be highlighted */
+.row-hover:hover {
+  background-color: #e3e3e3;
+}
+
+@media (min-width: 768px) {
+
+  /* making the buzzpoint data a scrollable box */
+  .buzzes {
+    overflow-y: auto;
+    max-height: 95vh;
+    border-bottom: 1px solid #ccc;
+  }
+}
+
+.buzzpoint-word {
+  background-color: #DEEDFF;
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+rt {
+  font-size: 0.9rem;
+  font-family: 'Times New Roman', Times, serif;
+  color: #424242;
+}
+
+rt .get {
+  color: #0DA51C;
+}
+
+rt .neg {
+  color: #E20808;
+}
+
+rt .value {
+  padding: 0px 5px;
+}
+
+table.sortableTable tbody tr.get {
+  background-color: #EBFFEC;
+}
+
+table.sortableTable tbody tr.neg {
+  background-color: #FFEBEB;
+}
+
+ruby {
+  display: inline-flex;
+  flex-direction: column-reverse;
+  vertical-align: bottom;
+  align-items: center;
+}
+
+rt {
+  display: inline;
+  line-height: 1.5;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index:1000
+}
+
+.table th {
+  padding: 8px 10px;
+  border-bottom: 1px solid #1a1a1a;
+  font-weight: bold;
+  text-align: left;
+}
+
+.table td {
+  padding: 8px 10px;
+}
+
+table.sortableTable th.up,
+table.sortableTable th.default,
+table.sortableTable th.down {
+  cursor: pointer;
+  position: relative;
+  padding-right: 26px;
+}
+
+table.sortableTable th.default:after,
+table.sortableTable th.default:before,
+table.sortableTable th.up:after,
+table.sortableTable th.up:before,
+table.sortableTable th.down:after,
+table.sortableTable th.down:before {
+	position: absolute;
+	display: block;
+	opacity: .125;
+	right: 10px;
+	line-height: 9px;
+	font-size: .8em
+}
+
+table.sortableTable th.default:before,
+table.sortableTable th.up:before,
+table.sortableTable th.down:before {
+	bottom: 50%;
+	content: "▲";
+	content: "▲" /""
+}
+
+table.sortableTable th.default:after,
+table.sortableTable th.up:after,
+table.sortableTable th.down:after {
+	top: 50%;
+	content: "▼";
+	content: "▼" /"";
+}
+
+table.sortableTable th.up:before,
+table.sortableTable th.down:after {
+	opacity: .6
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.highlighted-word {
+  box-shadow: 5px 5px 10px #b3b3b3;
+  transition: all 200ms ease-out;
+  border-radius: 3px;
+}
+
+table tbody tr.highlighted-row.zero {
+  background-color: #e3e3e3;
+  transition: all 200ms ease-out;
+}
+
+table tbody tr.highlighted-row.neg,
+table tbody tr.highlighted-row.get {
+  filter: brightness(90%);
+  transition: all 200ms ease-out;
+}
+
+.pronunciation-guide {
+  color: rgb(119, 119, 119)
+}
+
+.compact {
+  font-size: .8rem;
+  line-height: 1.1rem;
 }
