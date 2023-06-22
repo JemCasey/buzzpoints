@@ -47,9 +47,7 @@ export default function TossupGraph({ buzzes, onHoverPositionChange }: TossupGra
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="buzz_position" interval={10} />
                     <YAxis />
-                    <Tooltip
-                        
-                    />
+                    <Tooltip />
                     <Legend />
                     <Area type="monotone" dataKey="total" name="Total Buzzes" stroke="#808080" fill="#808080" />
                     <Area type="monotone" dataKey="correct" name="Correct Buzzes" stroke="#33ff3d" fill="#33ff3d" />

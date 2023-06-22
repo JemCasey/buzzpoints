@@ -38,7 +38,7 @@ export default function TournamentSummary({ tournament }: TournamentSummaryProps
     const data = [
         {
             name: tournament.name,
-            date: startDate + (endDate && endDate !== startDate ? `- ${endDate}` : ''),
+            date: startDate + (endDate && endDate !== startDate ? ` - ${endDate}` : ''),
             level: tournament.level,
             location: tournament.location,
             set: tournament.question_set.name,

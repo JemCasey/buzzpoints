@@ -14,14 +14,14 @@ type TossupText = {
 export default function TossupText({ tossup: { question, answer }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
     // keywords--for now just the the powermark--shouldn't render as clickable words
     const keywords = ["(*)"];
-    let getWords = (question:string) => {
+    const getWords = (question:string) => {
         let emphasis = false;
         let bold = true;
         let pg = false;
         let powerbreak = false;
 
         let words = question.replaceAll('&nbsp;', ' ').split(' ').reduce((prev, curr) => {
-            let word = removeTags(curr).replace(/\W/g, '');
+            let word = removeTags(curr).replace(/^\W*/, '').replace(/\W*$/g, '');
 
             if (curr.match(`<em>.*${word}`))
                 emphasis = true;

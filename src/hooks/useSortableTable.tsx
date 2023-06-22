@@ -4,8 +4,6 @@ import * as _ from 'radash';
 
 function sort(data:any[], sortField:string, sortOrder:string):any[] {
   if (sortField) {
-    //console.log(data.map(d => _.get(d, sortField)).sort());
-
     const sorted = [...data].sort((a, b) => {
       let valueOne = _.get(a, sortField) as any;
       let valueTwo = _.get(b, sortField) as any; 
@@ -20,20 +18,6 @@ function sort(data:any[], sortField:string, sortOrder:string):any[] {
 
     if (sortOrder === "desc")
       sorted.reverse();
-    //   (a, b) => {
-    //   let valueOne = _.get(a, sortField) as any;
-    //   let valueTwo = _.get(b, sortField) as any;
-
-    //   if (!valueOne && !valueTwo) return 0;
-    //   if (!valueOne) return 1;
-    //   if (!valueTwo) return -1;
-
-    //   return (
-    //      valueOne.toString().localeCompare(valueTwo.toString(), undefined, {
-    //       numeric: true,
-    //     }) * (sortOrder === "asc" ? 1 : -1)
-    //   );
-    // });
 
     return sorted;
   } else {
