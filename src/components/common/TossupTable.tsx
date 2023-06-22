@@ -54,6 +54,7 @@ export function TossupTable({ tossups }: TossupTableProps) {
     ];
 
     return <Table
+        compact
         columns={columns}
         data={tossups.map(t => ({
             ...t,

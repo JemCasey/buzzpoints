@@ -34,6 +34,62 @@ export const getTossupForDetailQuery = db.prepare(`
         AND tossup.question_number = ?
 `);
 
+export const getBonusPartsQuery = db.prepare(`
+    SELECT  bonus.id,
+            bonus.packet_id,
+            bonus.question_number,
+            bonus.leadin,
+            bonus_part.part,
+            bonus_part.answer,
+            bonus_part.difficulty_modifier,
+            bonus_part.value,
+            bonus.metadata,
+            bonus.author,
+            bonus.editor,
+            bonus.category,
+            bonus.subcategory,
+            bonus.subsubcategory
+    FROM    bonus
+    JOIN    packet ON bonus.packet_id = packet.id
+    JOIN    question_set ON packet.question_set_id = question_set.id
+    JOIN    tournament ON question_set.id = tournament.question_set_id
+    JOIN    round ON round.packet_id = packet.id
+    JOIN    bonus_part on bonus.id = bonus_part.bonus_id
+    WHERE   tournament.id = ?
+        AND round.number = ?
+        AND bonus.question_number = ?
+    ORDER BY part_number
+`);
+
+export const getDirectsByBonusQuery = db.prepare(`
+    SELECT  team.name AS team_name,
+            team.slug AS team_slug,
+            opponent.name AS opponent_name,
+            opponent.slug AS opponent_slug,
+            part_one_direct.value AS part_one,
+            part_two_direct.value AS part_two,
+            part_three_direct.value AS part_three,
+            part_one_direct.value + part_two_direct.value + part_three_direct.value AS total
+    FROM    bonus
+    JOIN    bonus_part part_one ON bonus.id = part_one.bonus_id
+        AND part_one.part_number = 1
+    JOIN    bonus_part part_two ON bonus.id = part_two.bonus_id
+        AND part_two.part_number = 2
+    JOIN    bonus_part part_three ON bonus.id = part_three.bonus_id
+        AND part_three.part_number = 3
+    JOIN    bonus_part_direct part_one_direct ON part_one.id = part_one_direct.bonus_part_id
+    JOIN    bonus_part_direct part_two_direct ON part_two.id = part_two_direct.bonus_part_id
+        AND part_one_direct.team_id = part_two_direct.team_id
+    JOIN    bonus_part_direct part_three_direct ON part_three.id = part_three_direct.bonus_part_id
+        AND part_one_direct.team_id = part_three_direct.team_id 
+    JOIN    team ON part_one_direct.team_id = team.id
+    JOIN    game ON part_one_direct.game_id = game.id
+    JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
+    OR  (team.id <> team_two_id AND opponent.id = team_two_id)
+    WHERE   bonus.id = ?
+        AND team.tournament_id = ? 
+`);
+
 export const getBuzzesByTossupQuery = db.prepare(`
     SELECT  buzz.id,
             player_id,
@@ -92,7 +148,7 @@ export const getTossupsByTournamentQuery = db.prepare(`
             CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS conversion_rate,
             CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS power_rate,
             CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS neg_rate,
-            MIN(IIF(buzz.value > 0, buzz.buzz_position, 1000)) AS first_buzz,
+            MIN(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS first_buzz,
             AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS average_buzz
     FROM    tournament
     JOIN    round ON tournament.id = tournament_id
@@ -116,7 +172,7 @@ export const getTossupCategoryStatsQuery = db.prepare(`
             CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS conversion_rate,
             CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS power_rate,
             CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS neg_rate,
-            MIN(IIF(buzz.value > 0, buzz.buzz_position, 1000)) AS first_buzz,
+            MIN(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS first_buzz,
             AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS average_buzz
     FROM    tournament
     JOIN    round ON tournament.id = tournament_id
@@ -144,7 +200,7 @@ easy_part.part_number AS easy_part_number,
 medium_part.part_number AS medium_part_number,
 hard_part.part_number AS hard_part_number,
 COUNT(DISTINCT easy_part_direct.id) AS heard,
-CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS conversion_rate,
+CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
 CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS easy_conversion,
 CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS medium_conversion,
 CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS hard_conversion
@@ -181,8 +237,32 @@ GROUP BY tournament.slug,
  hard_part.part_number`);  
 
 export const getBonusCategoryStatsQuery = db.prepare(`
-    SELECT  *
-    FROM    bonus
+SELECT  bonus.category || ' - ' || bonus.subcategory AS category,
+        COUNT(DISTINCT easy_part_direct.id) AS heard,
+        CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+        CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS easy_conversion,
+        CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS medium_conversion,
+        CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS hard_conversion
+FROM    tournament
+JOIN    round ON tournament.id = tournament_id
+JOIN    packet ON round.packet_id = packet.id
+JOIN    bonus ON bonus.packet_id = packet.id
+JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+    AND easy_part.difficulty_modifier = 'e'
+JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+    AND medium_part.difficulty_modifier = 'm'
+JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+    AND hard_part.difficulty_modifier = 'h'
+JOIN    game ON round.id = game.round_id
+LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+    AND	game.id = easy_part_direct.game_id
+LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+    AND	game.id = medium_part_direct.game_id
+LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+    AND	game.id = hard_part_direct.game_id    
+WHERE   tournament.id = ?
+GROUP BY bonus.category,
+ bonus.subcategory
 `);
 
 export const getQuestionSetQuery = db.prepare(`

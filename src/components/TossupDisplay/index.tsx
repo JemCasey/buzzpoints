@@ -6,6 +6,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import TossupSummary from './TossupSummary';
 import { Buzz, BuzzDictionary, Tossup, Tournament } from '@/types';
+import TossupGraph from './TossupGraph';
 
 type TossupProps = {
     tossup: Tossup;
@@ -28,6 +29,7 @@ export default function TossupDisplay({ tossup, buzzes, tournament }:TossupProps
                     buzzes={buzzDictionary}
                     buzzpoint={buzzpoint}
                     setBuzzpoint={(buzzpoint:number) => setBuzzpoint(buzzpoint)} />
+                {/* <TossupGraph buzzes={buzzDictionary}></TossupGraph> */}
                 <TossupSummary buzzes={buzzes} tossup={tossup} />
                 <p className="mb-2"><Link href={`/tournament/${tournament.slug}/tossup`} className="underline">Back to tossups</Link></p>
             </div>

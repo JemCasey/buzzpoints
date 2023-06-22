@@ -3,6 +3,7 @@
 import { Tournament } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from 'next/navigation'
 
 type NavbarProps = {
     tournament?: Tournament
@@ -10,7 +11,8 @@ type NavbarProps = {
 
 export default function Navbar({ tournament }: NavbarProps) {
     const [menuOpen, setMenuOpen] = useState(false);
-    
+    const pathname = usePathname();
+
     if (!tournament)
         return <></>;
 
@@ -29,7 +31,13 @@ export default function Navbar({ tournament }: NavbarProps) {
                         <div className="hidden md:block">
                             <div className="ml-10 flex items-baseline space-x-4">
                                 {menuItems.map(({ url, label }, i) => (
-                                    <Link key={i} className="text-gray-300 hover:text-white px-2 py-2 rounded-md text-sm font-medium" href={url}>{label}</Link>
+                                    <Link 
+                                        key={i} 
+                                        className={`text-gray-300 hover:text-white px-2 py-2 rounded-md text-sm font-medium${pathname.includes(url) ? ' text-white' : ''}`}
+                                        href={url}
+                                    >
+                                        {label}
+                                    </Link>
                                 ))}
                             </div>
                         </div>

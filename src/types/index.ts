@@ -93,6 +93,26 @@ export type Buzz = {
     value: number;
 }
 
+export type BonusDirect = {
+    team_name: string;
+    team_slug: string;
+    opponent_name: string;
+    opponent_slug: string;
+    part_one: number;
+    part_two: number;
+    part_three: number;
+    total: number;
+}
+
+export type BonusPart = {
+    id: number;
+    leadin: string;
+    part: string;
+    answer: string;
+    value: number;
+    difficulty_modifier: number;
+}
+
 export type BuzzDictionary = {
     [buzz_position:number]: number[] 
 }

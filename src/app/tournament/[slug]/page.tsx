@@ -2,9 +2,10 @@ import Link from "next/link";
 import TournamentSummary from "@/components/TournamentSummary";
 import TossupCategoryTable from "@/components/TossupCategoryTable";
 import Layout from "@/components/Layout";
-import { getQuestionSetQuery, getTossupCategoryStatsQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { get, getBonusCategoryStatsQuery, getQuestionSetQuery, getTossupCategoryStatsQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
-import { QuestionSet, TossupCategory, Tournament } from "@/types";
+import { BonusCategory, QuestionSet, TossupCategory, Tournament } from "@/types";
+import BonusCategoryTable from "@/components/BonusCategoryTable";
 
 export async function generateStaticParams() {
     const tournaments = getTournamentsQuery.all() as Tournament[];
@@ -13,7 +14,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    let tournament = getTournamentBySlugQuery.get(params.slug) as Tournament;
+    let tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
 
     return {
         title: `${tournament.name} - Buzzpoints App`,
@@ -22,10 +23,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default function Tournament({ params }: { params: { slug: string } }) {
-    const tournament = getTournamentBySlugQuery.get(params.slug) as Tournament;
+    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
     const questionSet = getQuestionSetQuery.get(tournament.question_set_id) as QuestionSet;
     const tossupCategoryStats = getTossupCategoryStatsQuery.all(tournament.id) as TossupCategory[];
-    //const bonusCategoryStats = getBonusCategoryStatsQuery.all(tournament.id) as BonusCategory[];
+    const bonusCategoryStats = getBonusCategoryStatsQuery.all(tournament.id) as BonusCategory[];
 
     return (
         <Layout tournament={tournament}>
@@ -35,17 +36,17 @@ export default function Tournament({ params }: { params: { slug: string } }) {
                     question_set: questionSet
                 }}
             />
-            <div className="flex sm-flex-column md-flex-row md-space-x-10">
-                <div className="md-basis-1/2">
+            <div className="flex flex-col md:flex-row md:space-x-10 mt-5">
+                <div className="md:basis-1/2">
                     <h5 className="text-lg font-bold my-2">Tossups</h5>
                     <p className="mb-2"><Link href={`/tournament/${tournament.slug}/tossup`} className="underline">View all tossups</Link></p>
                     <TossupCategoryTable tossupCategoryStats={tossupCategoryStats} />
                 </div>
-                {/* <div className="md-basis-1/2">
+                <div className="md:basis-1/2">
                     <h5 className="text-lg font-bold my-2">Bonuses</h5>
-                    <p className="mb-2"><Link href={`/tournament/${tournament.slug}/bonus`}>View all bonuses</Link></p>
-                    <BonusCategoryTable bonusCategoryStats={tournament.bonusCategoryStats}/>
-                </div> */}
+                    <p className="mb-2"><Link href={`/tournament/${tournament.slug}/bonus`} className="underline">View all bonuses</Link></p>
+                    <BonusCategoryTable bonusCategoryStats={bonusCategoryStats}/>
+                </div>
             </div>
         </Layout>
     );

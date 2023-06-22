@@ -39,7 +39,7 @@ export function BonusTable({ bonuses }: BonusTableProps) {
             render: (item:Bonus) => (
                 <>
                     <Link
-                        href={`/tournament/${item.tournament_slug}}/bonus/${item.round}/${item.question_number}`}
+                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.easy_part }}></span>
@@ -60,7 +60,7 @@ export function BonusTable({ bonuses }: BonusTableProps) {
             render: (item:Bonus) => (
                 <>
                     <Link
-                        href={`/tournament/${item.tournament_slug}}/bonus/${item.round}/${item.question_number}`}
+                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.medium_part }}></span>
@@ -81,7 +81,7 @@ export function BonusTable({ bonuses }: BonusTableProps) {
             render: (item:Bonus) => (
                 <>
                     <Link
-                        href={`/tournament/${item.tournament_slug}}/bonus/${item.round}/${item.question_number}`}
+                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.hard_part }}></span>

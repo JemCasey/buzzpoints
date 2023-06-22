@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { TossupTable } from "@/components/common/TossupTable";
 import { Tossup, Tournament } from "@/types";
-import { getTossupsByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { get, getTossupsByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
 
 export const generateStaticParams = () => {
@@ -11,7 +11,7 @@ export const generateStaticParams = () => {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    let tournament = getTournamentBySlugQuery.get(params.slug) as Tournament;
+    let tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
 
     return {
         title: `${tournament.name} Tossups - Buzzpoints App`,
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default function TossupPage({ params }: { params: { slug: string } }) {
-    const tournament = getTournamentBySlugQuery.get(params.slug) as Tournament;
+    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
     const tossups = getTossupsByTournamentQuery.all(tournament!.id) as Tossup[];
 
     return <Layout tournament={tournament}>
