@@ -6,7 +6,17 @@ function sort(data:any[], sortField:string, sortOrder:string):any[] {
   if (sortField) {
     //console.log(data.map(d => _.get(d, sortField)).sort());
 
-    const sorted = [...data].sort((a, b) => (_.get(a, sortField) as any) > (_.get(b, sortField) as any) ? 1 : -1);
+    const sorted = [...data].sort((a, b) => {
+      let valueOne = _.get(a, sortField) as any;
+      let valueTwo = _.get(b, sortField) as any; 
+      
+      if (!valueOne && !valueTwo) return 0;
+      if (!valueOne) return 1;
+      if (!valueTwo) return -1;
+      if (valueOne === valueTwo) return 0;
+
+      return valueOne > valueTwo ? 1 : -1;
+    });
 
     if (sortOrder === "desc")
       sorted.reverse();
