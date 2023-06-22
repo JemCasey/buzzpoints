@@ -1,6 +1,6 @@
 import { Buzz, Tossup } from "@/types";
 import Table from "../Table";
-import { formatPercent } from "@/utils";
+import { formatDecimal, formatPercent } from "@/utils";
 
 type TossupSummaryProps = {
     buzzes: Buzz[];
@@ -11,7 +11,7 @@ export default function TossupSummary({ buzzes, tossup: { heard, average_buzz } 
     let columns = [
         { key: 'conversion_rate', label: 'Conv. %', format: formatPercent },
         { key: 'power_rate', label: 'Power %', format: formatPercent },
-        { key: 'average_buzz', label: 'Avg. Buzz' }
+        { key: 'average_buzz', label: 'Average Buzz', format: formatDecimal }
     ];
     let correctBuzzes = buzzes.filter(b => b.value > 0).map(b => b.buzz_position);
     let items = [{

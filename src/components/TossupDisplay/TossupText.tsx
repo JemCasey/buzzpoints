@@ -21,7 +21,7 @@ export default function TossupText({ tossup: { question, answer }, buzzes, hover
         let powerbreak = false;
 
         let words = question.replaceAll('&nbsp;', ' ').split(' ').reduce((prev, curr) => {
-            let word = removeTags(curr).replace(/^\W*/, '').replace(/\W*$/g, '');
+            let word = removeTags(curr).replace(/^\W*/, '').replace(/\W*$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
             if (curr.match(`<em>.*${word}`))
                 emphasis = true;
