@@ -8,9 +8,9 @@ function sort(data:any[], sortField:string, sortOrder:string):any[] {
       let valueOne = _.get(a, sortField) as any;
       let valueTwo = _.get(b, sortField) as any; 
       
-      if (!valueOne && !valueTwo) return 0;
-      if (!valueOne) return 1;
-      if (!valueTwo) return -1;
+      if (valueOne == null && valueTwo == null) return 0;
+      if (valueOne == null) return sortOrder === "asc" ? 1 : -1;
+      if (valueTwo == null) return sortOrder === "asc" ? -1 : 1;
       if (valueOne === valueTwo) return 0;
 
       return valueOne > valueTwo ? 1 : -1;
