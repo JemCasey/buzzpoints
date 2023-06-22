@@ -91,7 +91,7 @@ rt {
   position: sticky;
   top: 0;
   width: 100%;
-  z-index:1000
+  z-index: 1000
 }
 
 .table th {
@@ -119,33 +119,33 @@ table.sortableTable th.up:after,
 table.sortableTable th.up:before,
 table.sortableTable th.down:after,
 table.sortableTable th.down:before {
-	position: absolute;
-	display: block;
-	opacity: .125;
-	right: 10px;
-	line-height: 9px;
-	font-size: .8em
+  position: absolute;
+  display: block;
+  opacity: .125;
+  right: 10px;
+  line-height: 9px;
+  font-size: .8em
 }
 
 table.sortableTable th.default:before,
 table.sortableTable th.up:before,
 table.sortableTable th.down:before {
-	bottom: 50%;
-	content: "▲";
-	content: "▲" /""
+  bottom: 50%;
+  content: "▲";
+  content: "▲" /""
 }
 
 table.sortableTable th.default:after,
 table.sortableTable th.up:after,
 table.sortableTable th.down:after {
-	top: 50%;
-	content: "▼";
-	content: "▼" /"";
+  top: 50%;
+  content: "▼";
+  content: "▼" /"";
 }
 
 table.sortableTable th.up:before,
 table.sortableTable th.down:after {
-	opacity: .6
+  opacity: .6
 }
 
 .tableContainer {
@@ -176,4 +176,20 @@ table tbody tr.highlighted-row.get {
 .compact {
   font-size: .8rem;
   line-height: 1.1rem;
+}
+
+.chart-hover-word {
+  background-color: lightgray;
+}
+
+.average-buzz-line {
+  border-left: dashed;
+  color: palevioletred;
+  position: absolute;
+  bottom: 0;
+  height: 40px;
+}
+
+rt {
+  z-index: 1000;
 }

@@ -23,12 +23,23 @@ export const getTossupForDetailQuery = db.prepare(`
                 JOIN    packet ON round.packet_id = packet.id
                 WHERE   tossup.packet_id = packet.id
                     AND tossup.question_number <= game.tossups_read
-            ) as heard
+                    AND tournament_id = tournament.id
+            ) as heard,
+            (
+                SELECT  AVG(buzz_position)
+                FROM    buzz
+                JOIN    game ON game_id = game.id
+                JOIN    round ON round_id = round.id
+                WHERE   tossup_id = tossup.id
+                    AND tournament_id = tournament.id
+                    AND buzz.value > 0
+            ) as average_buzz
     FROM    tossup
     JOIN    packet ON tossup.packet_id = packet.id
     JOIN    question_set ON packet.question_set_id = question_set.id
     JOIN    tournament ON question_set.id = tournament.question_set_id
     JOIN    round ON tournament.id = round.tournament_id
+        AND round.packet_id = packet.id
     WHERE   tournament.id = ?
         AND round.number = ?
         AND tossup.question_number = ?
@@ -145,11 +156,11 @@ export const getTossupsByTournamentQuery = db.prepare(`
             tossup.slug,
             tossup.category_full AS category,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
-            CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS conversion_rate,
-            CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS power_rate,
-            CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS neg_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS conversion_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS power_rate,
+            ROUND(CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS neg_rate,
             MIN(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS first_buzz,
-            AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS average_buzz
+            AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS average_buzz
     FROM    tournament
     JOIN    round ON tournament.id = tournament_id
     JOIN    packet ON round.packet_id = packet.id
@@ -169,11 +180,11 @@ export const getTossupsByTournamentQuery = db.prepare(`
 export const getTossupCategoryStatsQuery = db.prepare(`
     SELECT  tossup.category || ' - ' || tossup.subcategory AS category,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
-            CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS conversion_rate,
-            CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS power_rate,
-            CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS neg_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS conversion_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS power_rate,
+            ROUND(CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS neg_rate,
             MIN(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS first_buzz,
-            AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS average_buzz
+            AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS average_buzz
     FROM    tournament
     JOIN    round ON tournament.id = tournament_id
     JOIN    packet ON round.packet_id = packet.id
@@ -201,9 +212,9 @@ medium_part.part_number AS medium_part_number,
 hard_part.part_number AS hard_part_number,
 COUNT(DISTINCT easy_part_direct.id) AS heard,
 CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
-CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS easy_conversion,
-CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS medium_conversion,
-CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS hard_conversion
+ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
 FROM    tournament
 JOIN    round ON tournament.id = tournament_id
 JOIN    packet ON round.packet_id = packet.id
@@ -240,9 +251,9 @@ export const getBonusCategoryStatsQuery = db.prepare(`
 SELECT  bonus.category || ' - ' || bonus.subcategory AS category,
         COUNT(DISTINCT easy_part_direct.id) AS heard,
         CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
-        CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS easy_conversion,
-        CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS medium_conversion,
-        CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS hard_conversion
+        ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+        ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+        ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
 FROM    tournament
 JOIN    round ON tournament.id = tournament_id
 JOIN    packet ON round.packet_id = packet.id

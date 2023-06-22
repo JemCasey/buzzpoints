@@ -5,11 +5,13 @@ import { BuzzDictionary, Tossup, Word } from "@/types";
 type TossupText = {
     tossup: Tossup;
     buzzes: BuzzDictionary;
+    hoverPosition: number | null;
+    averageBuzz: number | null | undefined;
     buzzpoint: number | null;
-    setBuzzpoint: (buzzpoint:number) => void;
+    onBuzzpointChange: (buzzpoint:number) => void;
 }
 
-export default function TossupText({ tossup: { question, answer }, buzzes, buzzpoint, setBuzzpoint }: TossupText) {
+export default function TossupText({ tossup: { question, answer }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
     // keywords--for now just the the powermark--shouldn't render as clickable words
     const keywords = ["(*)"];
     let getWords = (question:string) => {
@@ -96,10 +98,16 @@ export default function TossupText({ tossup: { question, answer }, buzzes, buzzp
                     key={i}
                     buzzes={buzzes[i]}
                     buzzpoint={buzzpoint}
-                    setBuzzpoint={setBuzzpoint}
+                    hoverPosition={hoverPosition}
+                    onBuzzpointChange={onBuzzpointChange}
+                    averageBuzz={averageBuzz}
                 />
             )}
         </p>
         <div>ANSWER: <span dangerouslySetInnerHTML={{ __html: answer }}></span></div>
+        <div className="text-xs relative mt-2 mb-2">
+            <span className="average-buzz-line" style={{height: '100%'}}></span>
+            <span className="ms-2"> = Average correct buzz position</span>
+        </div>
     </>
 }

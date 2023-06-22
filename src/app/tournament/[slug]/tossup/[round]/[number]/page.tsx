@@ -38,7 +38,7 @@ export default function TossupPage({ params }: { params: { slug:string, round:st
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
     const tossup = getTossupForDetailQuery.get(tournament.id, params.round, params.number) as Tossup;
     const buzzes = getBuzzesByTossupQuery.all(tossup.id, tournament.id) as Buzz[];
-        
+            
     return (
         <div>
             <Layout tournament={tournament}>
