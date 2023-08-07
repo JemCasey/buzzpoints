@@ -5,24 +5,24 @@ import { getNavOptions, removeTags, shortenAnswerline } from "@/utils";
 import { get, all, getBonusesByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery, getBonusPartsQuery, getDirectsByBonusQuery, getRoundsForTournamentQuery } from "@/utils/queries";
 import { Metadata } from "next";
 
-// export const generateStaticParams = () => {
-//     const tournaments = all<Tournament[]>(getTournamentsQuery);
-//     const paths = [];
+export const generateStaticParams = () => {
+    const tournaments = all<Tournament[]>(getTournamentsQuery);
+    const paths = [];
 
-//     for (let { id, slug } of tournaments) {
-//         const bonuses = getBonusesByTournamentQuery.all(id) as Bonus[];
+    for (let { id, slug } of tournaments) {
+        const bonuses = getBonusesByTournamentQuery.all(id) as Bonus[];
 
-//         for (let { round, question_number } of bonuses) {
-//             paths.push({
-//                 slug,
-//                 round: String(round),
-//                 number: String(question_number)
-//             });
-//         }
-//     }
+        for (let { round, question_number } of bonuses) {
+            paths.push({
+                slug,
+                round: String(round),
+                number: String(question_number)
+            });
+        }
+    }
 
-//     return paths;
-// }
+    return paths;
+}
 
 export async function generateMetadata({ params }: { params: { slug:string, round:string, number:string }}): Promise<Metadata> {
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
