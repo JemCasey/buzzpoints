@@ -12,9 +12,10 @@ type TossupProps = {
     tossup: Tossup;
     buzzes: Buzz[];
     tournament: Tournament;
+    navOptions: any;
 }
 
-export default function TossupDisplay({ tossup, buzzes, tournament }:TossupProps) {
+export default function TossupDisplay({ tossup, buzzes, tournament, navOptions }:TossupProps) {
     const [hoverPosition, setHoverPosition] = useState<number | null>(null);
     const [buzzpoint, setBuzzpoint] = useState<number | null>(null);
     const buzzDictionary:BuzzDictionary = buzzes.reduce((a, b) => ({
@@ -26,6 +27,7 @@ export default function TossupDisplay({ tossup, buzzes, tournament }:TossupProps
         <div className="flex flex-col md:flex-row md:space-x-10">
             <div className="md:basis-1/2">
                 <h3 className="text-xl font-bold my-3">Question</h3>
+                <div className="mb-2">{!!navOptions.previous && <Link href={`/tournament/${tournament.slug}/tossup/${navOptions.previous.round}/${navOptions.previous.number}`} className="underline">Previous tossup</Link>}{!!navOptions.previous && !!navOptions.next && " - "}{!!navOptions.next && <Link href={`/tournament/${tournament.slug}/tossup/${navOptions.next.round}/${navOptions.next.number}`} className="underline">Next tossup</Link>}</div>
                 <TossupText tossup={tossup}
                     buzzes={buzzDictionary}
                     hoverPosition={hoverPosition}

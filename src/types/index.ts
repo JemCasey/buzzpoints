@@ -124,3 +124,7 @@ export type Word = {
     pgText?: string;
     keywords?: Word[];
 }
+
+export type Round = {
+    number: number;
+}

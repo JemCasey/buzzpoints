@@ -61,11 +61,11 @@ export default function Table({ data, columns, noSort, noHover, compact, rowProp
   return (
     <div className="tableContainer">
       <table className={`table ${noSort ? "" : "sortableTable "}divide-y divide-gray-300`}>
-        <TableHead {...{ columns, noSort, handleSorting }} />
+        <TableHead {...{ columns, noSort, handleSorting, compact }} />
         <tbody>
-          {tableData.map(item => (
+          {tableData.map((item, i) => (
             <tr 
-              key={item.id} 
+              key={item.id || i} 
               className={`${item.rowClass || ''} ${noHover ? "" : "row-hover"}`} 
               {...(rowProperties ? rowProperties(item) : {})}
             >

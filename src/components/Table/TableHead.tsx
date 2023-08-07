@@ -6,9 +6,10 @@ type TableHeadProps = {
     columns: Column[];
     noSort?: boolean;
     handleSorting: Function;
+    compact?: boolean;
 }
 
-const TableHead = ({ columns, handleSorting, noSort }: TableHeadProps) => {
+const TableHead = ({ columns, handleSorting, noSort, compact }: TableHeadProps) => {
     const defaultSort = getDefaultSorting(columns);
     const [sortField, setSortField] = useState(defaultSort.sortField);
     const [sortOrder, setSortOrder] = useState(defaultSort.sortOrder);
@@ -26,7 +27,7 @@ const TableHead = ({ columns, handleSorting, noSort }: TableHeadProps) => {
     
     return (
         <thead>
-            <tr>
+            <tr className={compact ? " compact" : ""}>
                 {columns.map(({ label, key, sortKey, defaultDescending }) => {
                     const sortId = sortKey || key;
                     const cl = sortField === sortId && sortOrder === "asc" ? "up" : sortField === sortId && sortOrder === "desc" ? "down" : "default";

@@ -3,6 +3,13 @@ import { cache } from 'react';
 
 const db = new Database('data/database.db');
 
+export const getRoundsForTournamentQuery = db.prepare(`
+    SELECT  number
+    FROM    round
+    WHERE   tournament_id = ?
+    ORDER BY number
+`);
+
 export const getTossupForDetailQuery = db.prepare(`
     SELECT  tossup.id,
             tossup.packet_id,
@@ -152,6 +159,7 @@ export const getTossupsByTournamentQuery = db.prepare(`
             tournament.slug AS tournament_slug,
             round.number AS round,
             tossup.question_number,
+            tossup.question,
             tossup.answer,
             tossup.slug,
             tossup.category_full AS category,
@@ -178,7 +186,7 @@ export const getTossupsByTournamentQuery = db.prepare(`
              tossup.category_full`);  
 
 export const getTossupCategoryStatsQuery = db.prepare(`
-    SELECT  tossup.category || ' - ' || tossup.subcategory AS category,
+    SELECT  case when tossup.subcategory is not null then tossup.category || ' - ' || tossup.subcategory else tossup.category end AS category,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
             ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS conversion_rate,
             ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS power_rate,
@@ -248,7 +256,7 @@ GROUP BY tournament.slug,
  hard_part.part_number`);  
 
 export const getBonusCategoryStatsQuery = db.prepare(`
-SELECT  bonus.category || ' - ' || bonus.subcategory AS category,
+SELECT  case when bonus.subcategory is not null then bonus.category || ' - ' || bonus.subcategory else bonus.category end AS category,
         COUNT(DISTINCT easy_part_direct.id) AS heard,
         CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
         ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
@@ -283,6 +291,49 @@ export const getQuestionSetQuery = db.prepare(`
             difficulty
     FROM    question_set
     WHERE   id = ?
+`)
+
+export const getPlayerLeaderboard = db.prepare(`
+WITH raw_buzzes AS (
+    SELECT 	DISTINCT tossup_id,
+            buzz_position
+    FROM 	tossup
+    JOIN	game ON game_id = game.id
+    JOIN	round ON round_id = round.id
+    JOIN	buzz ON tossup_id = tossup.id
+    WHERE	exclude_from_individual = 0
+        AND tournament_id = 1
+        AND value > 0
+    ), buzz_ranks AS (
+        SELECT	tossup_id,
+                buzz_position,
+                (SELECT COUNT()+1 FROM (
+                    SELECT buzz_position FROM raw_buzzes b2 WHERE b2.buzz_position < b1.buzz_position AND b1.tossup_id = b2.tossup_id
+                )) as row_num
+        FROM	raw_buzzes b1
+    )
+    SELECT	buzz.player_id,
+            player.name,
+            sum(iif(buzz.value > 10, 1, 0)) as powers,
+            sum(iif(buzz.value = 10, 1, 0)) as gets,
+            sum(iif(buzz.value < 0, 1, 0)) as negs,
+            sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points,
+            min(iif(buzz.value > 0, buzz.buzz_position, NULL)) earliest_buzz,
+            avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
+            sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
+            sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
+            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks
+    FROM	tournament
+    JOIN	round ON tournament_id = tournament.id
+    JOIN	game ON round_id = round.id
+    JOIN	buzz ON buzz.game_id = game.id
+    JOIN	player ON buzz.player_id = player.id
+    LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
+    LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num < 3 AND buzz.value > 0
+    LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
+    WHERE	tournament_id = ?
+        AND	exclude_from_individual = 0
+    group by buzz.player_id, player.name
 `)
 
 export const get = cache(function get<T>(statement:Statement, ...params:any[]) {

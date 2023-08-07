@@ -11,7 +11,7 @@ type TossupText = {
     onBuzzpointChange: (buzzpoint:number) => void;
 }
 
-export default function TossupText({ tossup: { question, answer }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
+export default function TossupText({ tossup: { question, answer, metadata }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
     // keywords--for now just the the powermark--shouldn't render as clickable words
     const keywords = ["(*)"];
     const getWords = (question:string) => {
@@ -105,6 +105,7 @@ export default function TossupText({ tossup: { question, answer }, buzzes, hover
             )}
         </p>
         <div>ANSWER: <span dangerouslySetInnerHTML={{ __html: answer }}></span></div>
+        {metadata && <div>{"<" + metadata + ">"}</div>}
         <div className="text-xs relative mt-2 mb-2">
             <span className="average-buzz-line" style={{height: '100%'}}></span>
             <span className="ms-2"> = Average correct buzz position</span>

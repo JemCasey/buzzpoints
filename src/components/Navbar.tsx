@@ -19,6 +19,7 @@ export default function Navbar({ tournament }: NavbarProps) {
     let menuItems = [
         { label: 'Tossups', url: `/tournament/${tournament.slug}/tossup` },
         { label: 'Bonuses', url: `/tournament/${tournament.slug}/bonus` },
+        { label: 'Players', url: `/tournament/${tournament.slug}/player` }
     ];
     
     return <nav className="bg-gray-500 sticky">

@@ -1,8 +1,8 @@
 'use client';
 
-import { Tossup } from "@/types";
+import { Tossup, Word } from "@/types";
 import Table from "../Table";
-import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
+import { formatDecimal, formatPercent, removeTags, shortenAnswerline } from "@/utils";
 
 type TossupTableProps = {
     tossups: Tossup[]
