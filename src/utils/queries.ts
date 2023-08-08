@@ -188,9 +188,9 @@ export const getTossupsByTournamentQuery = db.prepare(`
 export const getTossupCategoryStatsQuery = db.prepare(`
     SELECT  case when tossup.subcategory is not null then tossup.category || ' - ' || tossup.subcategory else tossup.category end AS category,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
-            ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS conversion_rate,
-            ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS power_rate,
-            ROUND(CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS neg_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)), 3) AS conversion_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)), 3) AS power_rate,
+            ROUND(CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)), 3) AS neg_rate,
             MIN(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS first_buzz,
             AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS average_buzz
     FROM    tournament
