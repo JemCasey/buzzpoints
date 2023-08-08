@@ -11,7 +11,7 @@ type BonusDisplayProps = {
 }
 
 export default function BonusDisplay({ parts, directs, tournament, navOptions }: BonusDisplayProps) {   
-    return <div className="flex md:flex-row sm:flex-column md:space-x-10">
+    return <div className="flex flex-col md:flex-row md:space-x-10">
         <div className="md:basis-1/2">
             <h3 className="text-xl font-bold my-3">Question</h3>
             <div className="mb-2">{!!navOptions.previous && <Link href={`/tournament/${tournament.slug}/bonus/${navOptions.previous.round}/${navOptions.previous.number}`} className="underline">Previous bonus</Link>}{!!navOptions.previous && !!navOptions.next && " - "}{!!navOptions.next && <Link href={`/tournament/${tournament.slug}/bonus/${navOptions.next.round}/${navOptions.next.number}`} className="underline">Next bonus</Link>}</div>
