@@ -109,6 +109,7 @@ export type BonusPart = {
     leadin: string;
     part: string;
     answer: string;
+    metadata: string;
     value: number;
     difficulty_modifier: number;
 }
