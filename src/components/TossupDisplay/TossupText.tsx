@@ -16,7 +16,7 @@ export default function TossupText({ tossup: { question, answer, metadata }, buz
     const keywords = ["(*)"];
     const getWords = (question:string) => {
         let emphasis = false;
-        let bold = true;
+        let bold = false;
         let pg = false;
         let powerbreak = false;
 
