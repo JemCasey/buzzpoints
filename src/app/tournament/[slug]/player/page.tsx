@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default function PlayerPage({ params }: { params: { slug: string } }) {
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
-    const players = getPlayerLeaderboard.all(tournament!.id) as Tossup[];
+    const players = getPlayerLeaderboard.all(tournament!.id, tournament!.id) as Tossup[];
 
     return <Layout tournament={tournament}>
         <PlayerTable players={players} />

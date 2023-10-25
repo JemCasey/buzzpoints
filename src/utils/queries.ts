@@ -302,7 +302,7 @@ WITH raw_buzzes AS (
     JOIN	round ON round_id = round.id
     JOIN	buzz ON tossup_id = tossup.id
     WHERE	exclude_from_individual = 0
-        AND tournament_id = 1
+        AND tournament_id = ?
         AND value > 0
     ), buzz_ranks AS (
         SELECT	tossup_id,
@@ -329,7 +329,7 @@ WITH raw_buzzes AS (
     JOIN	buzz ON buzz.game_id = game.id
     JOIN	player ON buzz.player_id = player.id
     LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
-    LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num < 3 AND buzz.value > 0
+    LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	tournament_id = ?
         AND	exclude_from_individual = 0
