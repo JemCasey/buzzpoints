@@ -293,7 +293,7 @@ export const getQuestionSetQuery = db.prepare(`
     WHERE   id = ?
 `)
 
-export const getPlayerLeaderboard = db.prepare(`
+export const getPlayerLeaderboardQuery = db.prepare(`
 WITH raw_buzzes AS (
     SELECT 	DISTINCT tossup_id,
             buzz_position
@@ -312,8 +312,10 @@ WITH raw_buzzes AS (
                 )) as row_num
         FROM	raw_buzzes b1
     )
-    SELECT	buzz.player_id,
+    SELECT	tournament.slug as tournament_slug,
+            buzz.player_id,
             player.name,
+            player.slug as player_slug,
             sum(iif(buzz.value > 10, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
             sum(iif(buzz.value < 0, 1, 0)) as negs,
@@ -333,8 +335,33 @@ WITH raw_buzzes AS (
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	tournament_id = ?
         AND	exclude_from_individual = 0
-    group by buzz.player_id, player.name
+    group by tournament.slug, buzz.player_id, player.name, player.slug
 `)
+
+export const getPlayerBuzzes = db.prepare(`
+SELECT	tossup_id,
+        tossup.answer,
+        tournament.slug as tournament_slug,
+        round.number as round,
+        question_number,
+        category_full as category,
+        value,
+        buzz_position
+FROM	player
+JOIN	buzz ON player.id = player_id
+JOIN	game ON game_id = game.id
+JOIN	round ON round_id = round.id
+JOIN	tossup ON tossup.id = tossup_id
+JOIN    tournament ON tournament_id = tournament.id
+WHERE	tournament_id = ?
+    AND player.slug = ?
+`)
+
+export const getPlayerBySlugQuery = db.prepare(`
+SELECT  name
+FROM    player
+WHERE   slug = ?        
+`);
 
 export const get = cache(function get<T>(statement:Statement, ...params:any[]) {
     return statement.get(...params) as T;

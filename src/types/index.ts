@@ -129,3 +129,7 @@ export type Word = {
 export type Round = {
     number: number;
 }
+
+export type Player = {
+    name: string;
+}

@@ -11,7 +11,8 @@ export function PlayerTable({ players }: PlayerTableProps) {
     const columns = [
         {
             key: "name",
-            label: "Player"
+            label: "Player",
+            linkTemplate: "/tournament/{{tournament_slug}}/player/{{player_slug}}",
         },
         {
             key: "powers",
