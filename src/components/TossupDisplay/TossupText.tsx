@@ -32,7 +32,7 @@ export default function TossupText({ tossup: { question, answer, metadata }, buz
             else if (curr.match(`</b>.*${word}`))
                 bold = false;
 
-            if (curr.match(/\(“|"/)) {
+            if (curr.match(/\([“"]/)) {
                 pg = true;
             }
 
