@@ -71,7 +71,7 @@ export const getBonusPartsQuery = db.prepare(`
     JOIN    packet ON bonus.packet_id = packet.id
     JOIN    question_set ON packet.question_set_id = question_set.id
     JOIN    tournament ON question_set.id = tournament.question_set_id
-    JOIN    round ON round.packet_id = packet.id
+    JOIN    round ON round.packet_id = packet.id and round.tournament_id = tournament.id
     JOIN    bonus_part on bonus.id = bonus_part.bonus_id
     WHERE   tournament.id = ?
         AND round.number = ?
