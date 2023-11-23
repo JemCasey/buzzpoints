@@ -436,6 +436,26 @@ WITH raw_buzzes AS (
     group by buzz.player_id, player.name
 `)
 
+export const getTeamLeaderboard = db.prepare(`
+SELECT  team.name,
+        tournament.slug as tournament_slug,
+        sum(iif(buzz.value > 10, 1, 0)) as powers,
+        sum(iif(buzz.value = 10, 1, 0)) as gets,
+        sum(iif(buzz.value < 0, 1, 0)) as negs,
+        sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks,
+        sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points
+FROM	tournament
+JOIN	round ON round.tournament_id = tournament.id
+JOIN	game ON round_id = round.id
+JOIN	buzz ON buzz.game_id = game.id
+JOIN    player ON player.id = buzz.player_id
+JOIN	team ON team.id = player.team_id
+LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
+WHERE	tournament.id = ?
+AND	exclude_from_individual = 0
+group by team.name
+`)
+
 export const get = cache(function get<T>(statement:Statement, ...params:any[]) {
     return statement.get(...params) as T;
 });
