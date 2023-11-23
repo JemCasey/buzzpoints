@@ -438,12 +438,34 @@ WITH raw_buzzes AS (
 `)
 
 export const getTeamLeaderboard = db.prepare(`
+WITH raw_buzzes AS (
+    SELECT 	DISTINCT tossup_id,
+            buzz_position
+    FROM 	tossup
+    JOIN	game ON game_id = game.id
+    JOIN	round ON round_id = round.id
+    JOIN	buzz ON tossup_id = tossup.id
+    WHERE	exclude_from_individual = 0
+        AND tournament_id = ?
+        AND value > 0
+    ), buzz_ranks AS (
+        SELECT	tossup_id,
+                buzz_position,
+                (SELECT COUNT()+1 FROM (
+                    SELECT buzz_position FROM raw_buzzes b2 WHERE b2.buzz_position < b1.buzz_position AND b1.tossup_id = b2.tossup_id
+                )) as row_num
+        FROM	raw_buzzes b1
+    )
 SELECT  team.name,
         tournament.slug as tournament_slug,
         sum(iif(buzz.value > 10, 1, 0)) as powers,
         sum(iif(buzz.value = 10, 1, 0)) as gets,
         sum(iif(buzz.value < 0, 1, 0)) as negs,
         sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks,
+        min(iif(buzz.value > 0, buzz.buzz_position, NULL)) earliest_buzz,
+        avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
+        sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
+        sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
         sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points
 FROM	tournament
 JOIN	round ON round.tournament_id = tournament.id
@@ -451,6 +473,8 @@ JOIN	game ON round_id = round.id
 JOIN	buzz ON buzz.game_id = game.id
 JOIN    player ON player.id = buzz.player_id
 JOIN	team ON team.id = player.team_id
+LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
+LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
 LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
 WHERE	tournament.id = ?
 AND	exclude_from_individual = 0

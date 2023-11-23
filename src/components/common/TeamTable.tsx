@@ -40,35 +40,31 @@ export function TeamTable({ teams }: TeamTableProps) {
             label: "Points",
             defaultDescending: true
         },
-        // {
-        //     key: "earliest_buzz",
-        //     label: "Earliest Buzz"
-        // },
-        // {
-        //     key: "average_buzz",
-        //     label: "Avg. Buzz",
-        //     format: formatDecimal
-        // },
-        // {
-        //     key: "first_buzzes",
-        //     label: "First Buzzes",
-        //     defaultDescending: true
-        // },
-        // {
-        //     key: "top_three_buzzes",
-        //     label: "Top 3 Buzzes",
-        //     defaultDescending: true
-        // },
+        {
+            key: "earliest_buzz",
+            label: "Earliest Buzz"
+        },
+        {
+            key: "average_buzz",
+            label: "Avg. Buzz",
+            format: formatDecimal
+        },
+        {
+            key: "first_buzzes",
+            label: "First Buzzes",
+            defaultDescending: true
+        },
+        {
+            key: "top_three_buzzes",
+            label: "Top 3 Buzzes",
+            defaultDescending: true
+        },
         // {
         //     key: "ppb",
         //     label: "PPB",
         //     format: formatDecimal
         // }
     ];
-
-    // teams.map(team => {
-    //     team.name = <u><a href={`team/${encodeURIComponent(team.name)}`}>{team.name}</a></u>;
-    // });
 
     return <Table
         compact
