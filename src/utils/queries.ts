@@ -143,6 +143,15 @@ export const getPlayersByTournamentQuery = db.prepare(`
     WHERE   team.tournament_id = ?
     ORDER BY player.name`);
 
+export const getTeamsByTournamentQuery = db.prepare(`
+    SELECT  team.id,
+            team.name,
+            team.slug,
+            team.tournament_id
+    FROM    team
+    WHERE   team.tournament_id = ?
+    ORDER BY team.name`);
+
 export const getTournamentsQuery = db.prepare(`
     SELECT  id,
             name,
@@ -262,6 +271,37 @@ WITH raw_buzzes AS (
         AND player.name = ?
         AND	exclude_from_individual = 0
     group by tossup.category
+`)
+
+export const getTeamCategoryStatsQuery = db.prepare(`
+SELECT  case when bonus.subcategory is not null then bonus.category || ' - ' || bonus.subcategory else bonus.category end AS category,
+        COUNT(DISTINCT easy_part_direct.id) AS heard,
+        CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+        ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+        ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+        ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
+FROM    tournament
+JOIN    round ON tournament.id = round.tournament_id
+JOIN    packet ON round.packet_id = packet.id
+JOIN    bonus ON bonus.packet_id = packet.id
+JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+    AND easy_part.difficulty_modifier = 'e'
+JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+    AND medium_part.difficulty_modifier = 'm'
+JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+    AND hard_part.difficulty_modifier = 'h'
+JOIN    game ON round.id = game.round_id
+LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+    AND	game.id = easy_part_direct.game_id
+LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+    AND	game.id = medium_part_direct.game_id
+LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+    AND	game.id = hard_part_direct.game_id
+JOIN team ON team.id = easy_part_direct.team_id
+WHERE   tournament.id = ?
+    AND team.name = ?
+GROUP BY bonus.category,
+ bonus.subcategory
 `)
 
 export const getBonusesByTournamentQuery = db.prepare(`

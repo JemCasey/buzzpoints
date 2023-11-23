@@ -136,3 +136,10 @@ export type Player = {
     tournament_id: number;
     team_id: number;
 }
+
+export type Team = {
+    id: number;
+    name: string;
+    slug: string;
+    tournament_id: number;
+}
