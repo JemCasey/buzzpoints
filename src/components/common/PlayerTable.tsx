@@ -11,7 +11,9 @@ export function PlayerTable({ players }: PlayerTableProps) {
     const columns = [
         {
             key: "name",
-            label: "Player"
+            label: "Player",
+            linkTemplate: "/tournament/{{tournament_slug}}/player/{{name}}",
+            html: true
         },
         {
             key: "powers",
@@ -58,10 +60,6 @@ export function PlayerTable({ players }: PlayerTableProps) {
             defaultDescending: true
         }
     ];
-
-    players.map(player => {
-        player.name = <u><a href={`player/${encodeURIComponent(player.name)}`}>{player.name}</a></u>;
-    });
 
     return <Table
         compact

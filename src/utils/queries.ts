@@ -414,6 +414,7 @@ WITH raw_buzzes AS (
     )
     SELECT	buzz.player_id,
             player.name,
+            tournament.slug as tournament_slug,
             sum(iif(buzz.value > 10, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
             sum(iif(buzz.value < 0, 1, 0)) as negs,
