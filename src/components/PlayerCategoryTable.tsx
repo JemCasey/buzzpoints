@@ -1,17 +1,17 @@
 'use client';
 
-import Table from "../Table";
+import Table from "./Table";
 import { formatDecimal } from "@/utils";
 
-type PlayerTableProps = {
-    players: any[]
+type PlayerCategoryTableProps = {
+    categories: any[]
 }
 
-export function PlayerTable({ players }: PlayerTableProps) {
+export default function PlayerCategoryTable({ categories }: PlayerCategoryTableProps) {
     const columns = [
         {
-            key: "name",
-            label: "Player"
+            key: "category",
+            label: "Category"
         },
         {
             key: "powers",
@@ -59,13 +59,9 @@ export function PlayerTable({ players }: PlayerTableProps) {
         }
     ];
 
-    players.map(player => {
-        player.name = <u><a href={`player/${encodeURIComponent(player.name)}`}>{player.name}</a></u>;
-    });
-
     return <Table
         compact
         columns={columns}
-        data={players}
+        data={categories}
     />
 }

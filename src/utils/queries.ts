@@ -24,7 +24,7 @@ export const getTossupForDetailQuery = db.prepare(`
             tossup.subcategory,
             tossup.subsubcategory,
             (
-                SELECT  count(game.id) 
+                SELECT  count(game.id)
                 FROM    game
                 JOIN    round ON round_id = round.id
                 JOIN    packet ON round.packet_id = packet.id
@@ -99,13 +99,13 @@ export const getDirectsByBonusQuery = db.prepare(`
     JOIN    bonus_part_direct part_two_direct ON part_two.id = part_two_direct.bonus_part_id
         AND part_one_direct.team_id = part_two_direct.team_id
     JOIN    bonus_part_direct part_three_direct ON part_three.id = part_three_direct.bonus_part_id
-        AND part_one_direct.team_id = part_three_direct.team_id 
+        AND part_one_direct.team_id = part_three_direct.team_id
     JOIN    team ON part_one_direct.team_id = team.id
     JOIN    game ON part_one_direct.game_id = game.id
     JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
     OR  (team.id <> team_two_id AND opponent.id = team_two_id)
     WHERE   bonus.id = ?
-        AND team.tournament_id = ? 
+        AND team.tournament_id = ?
 `);
 
 export const getBuzzesByTossupQuery = db.prepare(`
@@ -128,29 +128,41 @@ export const getBuzzesByTossupQuery = db.prepare(`
     JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
         OR  (team.id <> team_two_id AND opponent.id = team_two_id)
     WHERE   buzz.tossup_id = ?
-        AND team.tournament_id = ? 
+        AND team.tournament_id = ?
 `);
+
+export const getPlayersByTournamentQuery = db.prepare(`
+    SELECT  player.id,
+            player.name,
+            team.name AS team_name,
+            team.slug AS team_slug,
+            team.id AS team_id,
+            team.tournament_id AS tournament_id
+    FROM    player
+    JOIN    team ON player.team_id = team.id
+    WHERE   team.tournament_id = ?
+    ORDER BY player.name`);
 
 export const getTournamentsQuery = db.prepare(`
     SELECT  id,
-            name, 
-            slug, 
-            location, 
-            level, 
-            start_date, 
-            end_date 
+            name,
+            slug,
+            location,
+            level,
+            start_date,
+            end_date
     FROM    tournament
     ORDER BY start_date desc`);
 
 export const getTournamentBySlugQuery = db.prepare(`
     SELECT  id,
-            name, 
-            slug, 
+            name,
+            slug,
             question_set_id,
-            location, 
-            level, 
-            start_date, 
-            end_date 
+            location,
+            level,
+            start_date,
+            end_date
     FROM    tournament
     WHERE   slug = ?`);
 
@@ -183,7 +195,7 @@ export const getTossupsByTournamentQuery = db.prepare(`
              tossup.question_number,
              tossup.answer,
              tossup.slug,
-             tossup.category_full`);  
+             tossup.category_full`);
 
 export const getTossupCategoryStatsQuery = db.prepare(`
     SELECT  case when tossup.subcategory is not null then tossup.category || ' - ' || tossup.subcategory else tossup.category end AS category,
@@ -203,6 +215,54 @@ export const getTossupCategoryStatsQuery = db.prepare(`
     WHERE   tournament.id = ?
     GROUP BY tossup.category, tossup.subcategory
 `);
+
+export const getPlayerCategoryStatsQuery = db.prepare(`
+WITH raw_buzzes AS (
+    SELECT 	DISTINCT tossup_id,
+            buzz_position,
+            category
+    FROM 	tossup
+    JOIN	game ON game_id = game.id
+    JOIN	round ON round_id = round.id
+    JOIN	buzz ON tossup_id = tossup.id
+    WHERE	exclude_from_individual = 0
+        AND tournament_id = ?
+        AND value > 0
+    ), buzz_ranks AS (
+        SELECT	tossup_id,
+                buzz_position,
+                b1.category,
+                (SELECT COUNT()+1 FROM (
+                    SELECT buzz_position FROM raw_buzzes b2 WHERE b2.buzz_position < b1.buzz_position AND b1.tossup_id = b2.tossup_id
+                )) as row_num
+        FROM	raw_buzzes b1
+    )
+    SELECT	buzz.player_id,
+            player.name,
+            tossup.category,
+            sum(iif(buzz.value > 10, 1, 0)) as powers,
+            sum(iif(buzz.value = 10, 1, 0)) as gets,
+            sum(iif(buzz.value < 0, 1, 0)) as negs,
+            sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points,
+            min(iif(buzz.value > 0, buzz.buzz_position, NULL)) earliest_buzz,
+            avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
+            sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
+            sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
+            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks
+    FROM	tournament
+    JOIN	round ON tournament_id = tournament.id
+    JOIN	game ON round_id = round.id
+    JOIN	buzz ON buzz.game_id = game.id
+    JOIN	player ON buzz.player_id = player.id
+    JOIN    tossup ON tossup.id = buzz.tossup_id
+    LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
+    LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
+    LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
+    WHERE	tournament_id = ?
+        AND player.name = ?
+        AND	exclude_from_individual = 0
+    group by tossup.category
+`)
 
 export const getBonusesByTournamentQuery = db.prepare(`
 SELECT  tournament.slug AS tournament_slug,
@@ -239,7 +299,7 @@ AND	game.id = easy_part_direct.game_id
 LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
 AND	game.id = medium_part_direct.game_id
 LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
-AND	game.id = hard_part_direct.game_id    
+AND	game.id = hard_part_direct.game_id
 WHERE   tournament.id = ?
 GROUP BY tournament.slug,
  round.number,
@@ -253,7 +313,7 @@ GROUP BY tournament.slug,
  hard_part.answer_sanitized,
  easy_part.part_number,
  medium_part.part_number,
- hard_part.part_number`);  
+ hard_part.part_number`);
 
 export const getBonusCategoryStatsQuery = db.prepare(`
 SELECT  case when bonus.subcategory is not null then bonus.category || ' - ' || bonus.subcategory else bonus.category end AS category,
@@ -278,7 +338,7 @@ LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.
 LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
     AND	game.id = medium_part_direct.game_id
 LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
-    AND	game.id = hard_part_direct.game_id    
+    AND	game.id = hard_part_direct.game_id
 WHERE   tournament.id = ?
 GROUP BY bonus.category,
  bonus.subcategory
