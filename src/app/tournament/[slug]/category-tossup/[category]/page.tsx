@@ -1,13 +1,23 @@
 import Layout from "@/components/Layout";
 import { PlayerTable } from "@/components/common/PlayerTable";
 import { Tossup, Tournament } from "@/types";
-import { get, getPlayerCategoryLeaderboard, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { get, getCategoriesForTournamentQuery, getPlayerCategoryLeaderboard, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
 
-export const generateStaticParams = () => {
-    const tournaments: Tournament[] = getTournamentsQuery.all() as Tournament[];
+export async function generateStaticParams() {
+    const tournaments = getTournamentsQuery.all() as Tournament[];
+    const paths = [];
+    for (const tournament of tournaments) {
+        const categories = getCategoriesForTournamentQuery.all(tournament.id) as string[];
+        for (const category of categories) {
+            paths.push({
+                slug: tournament.slug,
+                category: encodeURIComponent(category)
+            });
+        }
+    }
 
-    return tournaments.map(({ slug }) => ({ slug }));
+    return paths;
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
