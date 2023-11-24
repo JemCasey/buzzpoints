@@ -21,6 +21,7 @@ export default function Navbar({ tournament }: NavbarProps) {
         { label: 'Bonuses', url: `/tournament/${tournament.slug}/bonus` },
         { label: 'Players', url: `/tournament/${tournament.slug}/player` },
         { label: 'Teams', url: `/tournament/${tournament.slug}/team` },
+        { label: 'Categories (Tossup)', url: `/tournament/${tournament.slug}/category-tossup` },
     ];
 
     return <nav className="bg-gray-500 sticky">
