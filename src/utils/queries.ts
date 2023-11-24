@@ -437,7 +437,7 @@ WITH raw_buzzes AS (
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	tournament_id = ?
-    AND tossup.subcategory = ?
+    AND (tossup.category = ? or tossup.subcategory = ?)
     AND	exclude_from_individual = 0
     group by buzz.player_id, player.name
 `);

@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default function CategoryTossupPage({ params }: { params: { slug: string, category: string } }) {
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
-    const players = getPlayerCategoryLeaderboard.all(tournament!.id, tournament!.id, decodeURIComponent(params.category)) as Tossup[];
+    const players = getPlayerCategoryLeaderboard.all(tournament!.id, tournament!.id, decodeURIComponent(params.category), decodeURIComponent(params.category)) as Tossup[];
 
     return <Layout tournament={tournament}>
         <h3 className="text-xl text-center mb-3"><b>{decodeURIComponent(params.category)}</b></h3>
