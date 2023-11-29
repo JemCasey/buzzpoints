@@ -11,10 +11,8 @@ type BonusCategoryTableProps = {
 export default function BonusCategoryTable({ bonusCategoryStats }: BonusCategoryTableProps) {
     const columns = [
         {
-            key: "category",
-            label: "Category",
-            linkTemplate: "/tournament/{{tournament_slug}}/category-bonus/{{category}}",
-            html: true
+            key: "name",
+            label: "Team Name"
         },
         {
             key: "heard",

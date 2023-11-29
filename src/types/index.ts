@@ -53,7 +53,7 @@ export type BonusConversion = {
     hard_conversion: number;
 }
 
-export type Bonus = Question & {    
+export type Bonus = Question & {
     easy_part: string;
     easy_part_sanitized: string;
     medium_part: string;
@@ -115,7 +115,7 @@ export type BonusPart = {
 }
 
 export type BuzzDictionary = {
-    [buzz_position:number]: number[] 
+    [buzz_position:number]: number[]
 }
 
 export type Word = {
@@ -128,4 +128,18 @@ export type Word = {
 
 export type Round = {
     number: number;
+}
+
+export type Player = {
+    id: number;
+    name: string;
+    tournament_id: number;
+    team_id: number;
+}
+
+export type Team = {
+    id: number;
+    name: string;
+    slug: string;
+    tournament_id: number;
 }

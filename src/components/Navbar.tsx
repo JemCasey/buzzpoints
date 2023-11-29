@@ -19,9 +19,12 @@ export default function Navbar({ tournament }: NavbarProps) {
     let menuItems = [
         { label: 'Tossups', url: `/tournament/${tournament.slug}/tossup` },
         { label: 'Bonuses', url: `/tournament/${tournament.slug}/bonus` },
-        { label: 'Players', url: `/tournament/${tournament.slug}/player` }
+        { label: 'Players', url: `/tournament/${tournament.slug}/player` },
+        { label: 'Teams', url: `/tournament/${tournament.slug}/team` },
+        { label: 'Categories (Tossup)', url: `/tournament/${tournament.slug}/category-tossup` },
+        { label: 'Categories (Bonus)', url: `/tournament/${tournament.slug}/category-bonus` },
     ];
-    
+
     return <nav className="bg-gray-500 sticky">
             <div className="min-w-screen mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
@@ -32,8 +35,8 @@ export default function Navbar({ tournament }: NavbarProps) {
                         <div className="hidden md:block">
                             <div className="ml-10 flex items-baseline space-x-4">
                                 {menuItems.map(({ url, label }, i) => (
-                                    <Link 
-                                        key={i} 
+                                    <Link
+                                        key={i}
                                         className={`text-gray-300 hover:text-white px-2 py-2 rounded-md text-sm font-medium${pathname.includes(url) ? ' text-white' : ''}`}
                                         href={url}
                                     >
@@ -48,9 +51,9 @@ export default function Navbar({ tournament }: NavbarProps) {
                         </div>
                     </div>
                     <div className="-mr-2 flex md:hidden">
-                        <button 
+                        <button
                             onClick={() => setMenuOpen(!menuOpen)}
-                            type="button" 
+                            type="button"
                             className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 focus:text-white transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false"
                         >
                             <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">

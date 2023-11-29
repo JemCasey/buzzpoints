@@ -3,16 +3,16 @@
 import Table from "../Table";
 import { formatDecimal } from "@/utils";
 
-type PlayerTableProps = {
-    players: any[]
+type TeamTableProps = {
+    teams: any[]
 }
 
-export function PlayerTable({ players }: PlayerTableProps) {
+export function TeamTable({ teams }: TeamTableProps) {
     const columns = [
         {
             key: "name",
-            label: "Player",
-            linkTemplate: "/tournament/{{tournament_slug}}/player/{{name}}",
+            label: "Team",
+            linkTemplate: "/tournament/{{tournament_slug}}/team/{{name}}",
             html: true
         },
         {
@@ -58,12 +58,17 @@ export function PlayerTable({ players }: PlayerTableProps) {
             key: "top_three_buzzes",
             label: "Top 3 Buzzes",
             defaultDescending: true
-        }
+        },
+        // {
+        //     key: "ppb",
+        //     label: "PPB",
+        //     format: formatDecimal
+        // }
     ];
 
     return <Table
         compact
         columns={columns}
-        data={players}
+        data={teams}
     />
 }

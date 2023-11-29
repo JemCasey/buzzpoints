@@ -12,7 +12,9 @@ export default function TossupCategoryTable({ tossupCategoryStats }: TossupCateg
     const columns = [
         {
             key: "category",
-            label: "Category"
+            label: "Category",
+            linkTemplate: "/tournament/{{tournament_slug}}/category-tossup/{{category}}",
+            html: true
         },
         {
             key: "heard",
@@ -22,17 +24,17 @@ export default function TossupCategoryTable({ tossupCategoryStats }: TossupCateg
             key: "conversion_rate",
             label: "Conv %",
             format: formatPercent
-        },  
+        },
         {
             key: "power_rate",
             label: "Power %",
             format: formatPercent
-        },        
+        },
         {
             key: "average_buzz",
             label: "Average Buzz",
             format: formatDecimal
-        }                   
+        }
     ];
 
     return <Table columns={columns} data={tossupCategoryStats} />;
