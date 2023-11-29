@@ -2,14 +2,14 @@ import TeamCategoryTable from "@/components/TeamCategoryTable";
 import Layout from "@/components/Layout";
 import { get, getCategoriesForTournamentQuery, getTeamCategoryLeaderboard, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
-import { BonusCategory, Team, TossupConversion, Tournament } from "@/types";
+import { BonusCategory, Tournament } from "@/types";
 
 export async function generateStaticParams() {
     const tournaments = getTournamentsQuery.all() as Tournament[];
     const paths = [];
     for (const tournament of tournaments) {
-        const categories = getCategoriesForTournamentQuery.all(tournament.id) as string[];
-        for (const category of categories) {
+        const categories = getCategoriesForTournamentQuery.all(tournament.id) as any[];
+        for (const { category } of categories) {
             paths.push({
                 slug: tournament.slug,
                 category: encodeURIComponent(category)

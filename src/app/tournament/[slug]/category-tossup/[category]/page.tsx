@@ -8,8 +8,8 @@ export async function generateStaticParams() {
     const tournaments = getTournamentsQuery.all() as Tournament[];
     const paths = [];
     for (const tournament of tournaments) {
-        const categories = getCategoriesForTournamentQuery.all(tournament.id) as string[];
-        for (const category of categories) {
+        const categories = getCategoriesForTournamentQuery.all(tournament.id) as any[];
+        for (const { category } of categories) {
             paths.push({
                 slug: tournament.slug,
                 category: encodeURIComponent(category)
