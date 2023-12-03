@@ -4,15 +4,16 @@ import { BonusCategory } from "@/types";
 import Table from "./Table";
 import { formatDecimal, formatPercent } from "@/utils";
 
-type BonusCategoryTableProps = {
+type TeamCategoryTableProps = {
     bonusCategoryStats: BonusCategory[]
 }
 
-export default function BonusCategoryTable({ bonusCategoryStats }: BonusCategoryTableProps) {
+export default function TeamCategoryTable({ bonusCategoryStats }: TeamCategoryTableProps) {
     const columns = [
         {
             key: "name",
-            label: "Team Name"
+            label: "Team Name",
+            linkTemplate: "/tournament/{{slug}}/team/{{teamSlug}}"
         },
         {
             key: "heard",

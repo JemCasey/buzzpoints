@@ -8,7 +8,7 @@ export default function Home() {
     {
       key: "name",
       label: "Tournament",
-      linkTemplate: "/tournament/{{slug}}/tossup"
+      linkTemplate: "/tournament/{{slug}}"
     },
     {
       key: "location",

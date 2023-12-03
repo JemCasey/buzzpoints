@@ -2,7 +2,7 @@ import BonusCategoryTable from "@/components/BonusCategoryTable";
 import Layout from "@/components/Layout";
 import { get, getTeamsByTournamentQuery, getTeamCategoryStatsQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
-import { BonusCategory, Team, TossupConversion, Tournament } from "@/types";
+import { BonusCategory, Team, Tournament } from "@/types";
 
 export async function generateStaticParams() {
     const tournaments = getTournamentsQuery.all() as Tournament[];
@@ -10,10 +10,10 @@ export async function generateStaticParams() {
 
     for (let { id, slug } of tournaments) {
         const teams = getTeamsByTournamentQuery.all(id) as Team[];
-        for (const { name } of teams) {
+        for (const { slug: team_slug } of teams) {
             paths.push({
                 slug,
-                name: encodeURIComponent(name)
+                team_slug
             });
         }
     }
@@ -30,13 +30,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
 }
 
-export default function TeamPage({ params }: { params: { slug: string, name: string } }) {
+export default function TeamPage({ params }: { params: { slug: string, team_slug: string } }) {
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
-    const bonusTeamCategoryStats = getTeamCategoryStatsQuery.all(tournament.id, decodeURIComponent(params.name)) as BonusCategory[];
+    const bonusTeamCategoryStats = getTeamCategoryStatsQuery.all(tournament.id, params.team_slug) as BonusCategory[];
 
     return (
         <Layout tournament={tournament}>
-            <h3 className="text-xl text-center mb-3"><b>{decodeURIComponent(params.name)}</b></h3>
+            <h3 className="text-xl text-center mb-3"><b>{bonusTeamCategoryStats[0]?.name || 'N/A'}</b></h3>
             <BonusCategoryTable bonusCategoryStats={bonusTeamCategoryStats} />
         </Layout>
     );

@@ -4,13 +4,14 @@ import { cache } from 'react';
 const db = new Database('data/database.db');
 
 export const getCategoriesForTournamentQuery = db.prepare(`
-    SELECT  DISTINCT category
-    FROM    tossup
-    JOIN    packet ON tossup.packet_id = packet.id
-    JOIN    question_set ON packet.question_set_id = question_set.id
-    JOIN    tournament ON question_set.id = tournament.question_set_id
+    SELECT  DISTINCT category_main_slug AS category_slug
+    FROM    question
+    JOIN    packet_question ON question.id = question_id
+    JOIN    packet ON packet_question.packet_id = packet.id
+    JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
     WHERE   tournament.id = ?
-    ORDER BY category
+    ORDER BY category_main_slug
 `);
 
 export const getRoundsForTournamentQuery = db.prepare(`
@@ -22,24 +23,23 @@ export const getRoundsForTournamentQuery = db.prepare(`
 
 export const getTossupForDetailQuery = db.prepare(`
     SELECT  tossup.id,
-            tossup.packet_id,
-            tossup.question_number,
+            packet_question.question_number,
             tossup.question,
             tossup.answer,
-            tossup.slug,
-            tossup.metadata,
-            tossup.author,
-            tossup.editor,
-            tossup.category,
-            tossup.subcategory,
-            tossup.subsubcategory,
+            question.slug,
+            question.metadata,
+            question.author,
+            question.editor,
+            question.category,
+            question.subcategory,
+            question.subsubcategory,
             (
                 SELECT  count(game.id)
                 FROM    game
                 JOIN    round ON round_id = round.id
                 JOIN    packet ON round.packet_id = packet.id
-                WHERE   tossup.packet_id = packet.id
-                    AND tossup.question_number <= game.tossups_read
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
                     AND tournament_id = tournament.id
             ) as heard,
             (
@@ -52,40 +52,42 @@ export const getTossupForDetailQuery = db.prepare(`
                     AND buzz.value > 0
             ) as average_buzz
     FROM    tossup
-    JOIN    packet ON tossup.packet_id = packet.id
-    JOIN    question_set ON packet.question_set_id = question_set.id
-    JOIN    tournament ON question_set.id = tournament.question_set_id
+    JOIN    question ON tossup.question_id = question.id
+    JOIN    packet_question ON question.id = packet_question.question_id
+    JOIN    packet ON packet_question.packet_id = packet.id
+    JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
     JOIN    round ON tournament.id = round.tournament_id
         AND round.packet_id = packet.id
     WHERE   tournament.id = ?
         AND round.number = ?
-        AND tossup.question_number = ?
+        AND packet_question.question_number = ?
 `);
 
 export const getBonusPartsQuery = db.prepare(`
-    SELECT  bonus.id,
-            bonus.packet_id,
-            bonus.question_number,
+    SELECT  question_number,
             bonus.leadin,
             bonus_part.part,
             bonus_part.answer,
             bonus_part.difficulty_modifier,
             bonus_part.value,
-            bonus.metadata,
-            bonus.author,
-            bonus.editor,
-            bonus.category,
-            bonus.subcategory,
-            bonus.subsubcategory
+            question.metadata,
+            question.author,
+            question.editor,
+            question.category,
+            question.subcategory,
+            question.subsubcategory
     FROM    bonus
-    JOIN    packet ON bonus.packet_id = packet.id
-    JOIN    question_set ON packet.question_set_id = question_set.id
-    JOIN    tournament ON question_set.id = tournament.question_set_id
+    JOIN    question ON bonus.question_id = question.id
+    JOIN    packet_question ON question.id = packet_question.question_id
+    JOIN    packet ON packet_question.packet_id = packet.id
+    JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
     JOIN    round ON round.packet_id = packet.id and round.tournament_id = tournament.id
     JOIN    bonus_part on bonus.id = bonus_part.bonus_id
     WHERE   tournament.id = ?
         AND round.number = ?
-        AND bonus.question_number = ?
+        AND question_number = ?
     ORDER BY part_number
 `);
 
@@ -144,6 +146,7 @@ export const getBuzzesByTossupQuery = db.prepare(`
 export const getPlayersByTournamentQuery = db.prepare(`
     SELECT  player.id,
             player.name,
+            player.slug,
             team.name AS team_name,
             team.slug AS team_slug,
             team.id AS team_id,
@@ -177,7 +180,7 @@ export const getTournamentBySlugQuery = db.prepare(`
     SELECT  id,
             name,
             slug,
-            question_set_id,
+            question_set_edition_id,
             location,
             level,
             start_date,
@@ -189,11 +192,11 @@ export const getTossupsByTournamentQuery = db.prepare(`
     SELECT  tossup.id,
             tournament.slug AS tournament_slug,
             round.number AS round,
-            tossup.question_number,
+            packet_question.question_number,
             tossup.question,
             tossup.answer,
-            tossup.slug,
-            tossup.category_full AS category,
+            question.slug,
+            question.category_main AS category,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
             ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS conversion_rate,
             ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS power_rate,
@@ -203,7 +206,9 @@ export const getTossupsByTournamentQuery = db.prepare(`
     FROM    tournament
     JOIN    round ON tournament.id = tournament_id
     JOIN    packet ON round.packet_id = packet.id
-    JOIN    tossup ON tossup.packet_id = packet.id
+    JOIN    packet_question ON packet.id = packet_question.packet_id
+    JOIN    question ON packet_question.question_id = question.id
+    JOIN    tossup ON question.id = tossup.question_id
     JOIN    game ON round.id = game.round_id
     LEFT JOIN buzz ON tossup.id = buzz.tossup_id
 		AND	game.id = buzz.game_id
@@ -211,13 +216,14 @@ export const getTossupsByTournamentQuery = db.prepare(`
     GROUP BY tossup.id,
              tournament.slug,
              round.number,
-             tossup.question_number,
+             packet_question.question_number,
              tossup.answer,
-             tossup.slug,
-             tossup.category_full`);
+             question.slug,
+             question.category_main`);
 
 export const getTossupCategoryStatsQuery = db.prepare(`
-    SELECT  case when tossup.subcategory is not null then tossup.subcategory else tossup.category end AS category,
+    SELECT  category_main AS category,
+            question.category_main_slug AS category_slug,
             tournament.slug AS tournament_slug,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
             ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)), 3) AS conversion_rate,
@@ -228,19 +234,20 @@ export const getTossupCategoryStatsQuery = db.prepare(`
     FROM    tournament
     JOIN    round ON tournament.id = tournament_id
     JOIN    packet ON round.packet_id = packet.id
-    JOIN    tossup ON tossup.packet_id = packet.id
+    JOIN    packet_question ON packet.id = packet_question.packet_id
+    JOIN    question ON packet_question.question_id = question.id
+    JOIN    tossup ON question.id = tossup.question_id
     JOIN    game ON round.id = game.round_id
     LEFT JOIN buzz ON tossup.id = buzz.tossup_id
 		AND	game.id = buzz.game_id
     WHERE   tournament.id = ?
-    GROUP BY tossup.category, tossup.subcategory
+    GROUP BY question.category_main, question.category_main_slug, tournament.slug
 `);
 
 export const getPlayerCategoryStatsQuery = db.prepare(`
 WITH raw_buzzes AS (
     SELECT 	DISTINCT tossup_id,
-            buzz_position,
-            category
+            buzz_position
     FROM 	tossup
     JOIN	game ON game_id = game.id
     JOIN	round ON round_id = round.id
@@ -251,7 +258,6 @@ WITH raw_buzzes AS (
     ), buzz_ranks AS (
         SELECT	tossup_id,
                 buzz_position,
-                b1.category,
                 (SELECT COUNT()+1 FROM (
                     SELECT buzz_position FROM raw_buzzes b2 WHERE b2.buzz_position < b1.buzz_position AND b1.tossup_id = b2.tossup_id
                 )) as row_num
@@ -259,7 +265,7 @@ WITH raw_buzzes AS (
     )
     SELECT	buzz.player_id,
             player.name,
-            tossup.category,
+            category_main as category,
             sum(iif(buzz.value > 10, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
             sum(iif(buzz.value < 0, 1, 0)) as negs,
@@ -275,17 +281,21 @@ WITH raw_buzzes AS (
     JOIN	buzz ON buzz.game_id = game.id
     JOIN	player ON buzz.player_id = player.id
     JOIN    tossup ON tossup.id = buzz.tossup_id
+    JOIN    question ON tossup.question_id = question.id
     LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	tournament_id = ?
-        AND player.name = ?
+        AND player.slug = ?
         AND	exclude_from_individual = 0
-    group by tossup.category
+    group by buzz.player_id, player.name, category_main
 `)
 
 export const getTeamCategoryStatsQuery = db.prepare(`
-SELECT  case when bonus.subcategory is not null then bonus.subcategory else bonus.category end AS category,
+SELECT  tournament.slug AS tournament_slug,
+        team.name,
+        category_main AS category,
+        category_main_slug AS category_slug,
         COUNT(DISTINCT easy_part_direct.id) AS heard,
         CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
         ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
@@ -294,7 +304,9 @@ SELECT  case when bonus.subcategory is not null then bonus.subcategory else bonu
 FROM    tournament
 JOIN    round ON tournament.id = round.tournament_id
 JOIN    packet ON round.packet_id = packet.id
-JOIN    bonus ON bonus.packet_id = packet.id
+JOIN    packet_question ON packet.id = packet_question.packet_id
+JOIN    question ON packet_question.question_id = question.id
+JOIN    bonus ON bonus.question_id = question.id
 JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
     AND easy_part.difficulty_modifier = 'e'
 JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
@@ -310,16 +322,16 @@ LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.
     AND	game.id = hard_part_direct.game_id
 JOIN team ON team.id = easy_part_direct.team_id
 WHERE   tournament.id = ?
-    AND team.name = ?
-GROUP BY bonus.category,
- bonus.subcategory
+    AND team.slug = ?
+GROUP BY tournament.slug, team.name, category_main, category_main_slug
 `)
 
 export const getBonusesByTournamentQuery = db.prepare(`
 SELECT  tournament.slug AS tournament_slug,
 round.number AS round,
-bonus.question_number,
-bonus.category_full AS category,
+question_number,
+category_full AS category,
+category_main_slug AS category_slug,
 easy_part.answer AS easy_part,
 medium_part.answer AS medium_part,
 hard_part.answer AS hard_part,
@@ -337,7 +349,9 @@ ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT
 FROM    tournament
 JOIN    round ON tournament.id = tournament_id
 JOIN    packet ON round.packet_id = packet.id
-JOIN    bonus ON bonus.packet_id = packet.id
+JOIN    packet_question ON packet.id = packet_question.packet_id
+JOIN    question ON packet_question.question_id = question.id
+JOIN    bonus ON bonus.question_id = question.id
 JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
 AND easy_part.difficulty_modifier = 'e'
 JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
@@ -354,8 +368,9 @@ AND	game.id = hard_part_direct.game_id
 WHERE   tournament.id = ?
 GROUP BY tournament.slug,
  round.number,
- bonus.question_number,
- bonus.category_full,
+ question_number,
+ category_full,
+ category_main_slug,
  easy_part.answer,
  medium_part.answer,
  hard_part.answer,
@@ -367,7 +382,8 @@ GROUP BY tournament.slug,
  hard_part.part_number`);
 
 export const getBonusCategoryStatsQuery = db.prepare(`
-SELECT  case when bonus.subcategory is not null then bonus.subcategory else bonus.category end AS category,
+SELECT  question.category_main AS category,
+        question.category_main_slug AS category_slug,
         tournament.slug as tournament_slug,
         COUNT(DISTINCT easy_part_direct.id) AS heard,
         CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
@@ -377,7 +393,9 @@ SELECT  case when bonus.subcategory is not null then bonus.subcategory else bonu
 FROM    tournament
 JOIN    round ON tournament.id = tournament_id
 JOIN    packet ON round.packet_id = packet.id
-JOIN    bonus ON bonus.packet_id = packet.id
+JOIN    packet_question ON packet.id = packet_question.packet_id
+JOIN    question ON packet_question.question_id = question.id
+JOIN    bonus ON bonus.question_id = question.id
 JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
     AND easy_part.difficulty_modifier = 'e'
 JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
@@ -392,8 +410,7 @@ LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_d
 LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
     AND	game.id = hard_part_direct.game_id
 WHERE   tournament.id = ?
-GROUP BY bonus.category,
- bonus.subcategory
+GROUP BY question.category_main
 `);
 
 export const getPlayerCategoryLeaderboard = db.prepare(`
@@ -417,7 +434,9 @@ WITH raw_buzzes AS (
     )
     SELECT	buzz.player_id,
             player.name,
+            player.slug,
             tournament.slug as tournament_slug,
+            question.category_main as category,
             sum(iif(buzz.value > 10, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
             sum(iif(buzz.value < 0, 1, 0)) as negs,
@@ -433,19 +452,22 @@ WITH raw_buzzes AS (
     JOIN	buzz ON buzz.game_id = game.id
     JOIN	player ON buzz.player_id = player.id
     JOIN    tossup ON tossup.id = buzz.tossup_id
+    JOIN    question ON tossup.question_id = question.id
     LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	tournament_id = ?
-    AND (tossup.category = ? or tossup.subcategory = ?)
+    AND question.category_main_slug = ?
     AND	exclude_from_individual = 0
-    group by buzz.player_id, player.name
+    group by buzz.player_id, player.name, player.slug, tournament.slug, question.category_main
 `);
 
 
 export const getTeamCategoryLeaderboard = db.prepare(`
-SELECT  case when bonus.subcategory is not null then bonus.subcategory else bonus.category end AS category,
+SELECT  tournament.slug,
+        question.category_main AS category,
         team.name,
+        team.slug as teamSlug,
         COUNT(DISTINCT easy_part_direct.id) AS heard,
         CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
         ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
@@ -454,7 +476,9 @@ SELECT  case when bonus.subcategory is not null then bonus.subcategory else bonu
 FROM    tournament
 JOIN    round ON tournament.id = round.tournament_id
 JOIN    packet ON round.packet_id = packet.id
-JOIN    bonus ON bonus.packet_id = packet.id
+JOIN    packet_question ON packet.id = packet_question.packet_id
+JOIN    question ON packet_question.question_id = question.id
+JOIN    bonus ON bonus.question_id = question.id
 JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
     AND easy_part.difficulty_modifier = 'e'
 JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
@@ -470,17 +494,19 @@ LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.
     AND	game.id = hard_part_direct.game_id
 JOIN team ON team.id = easy_part_direct.team_id
 WHERE   tournament.id = ?
-AND     (bonus.category = ? or bonus.subcategory = ?)
-GROUP BY team.name
+AND     question.category_main_slug = ?
+GROUP BY tournament.slug, category_main, team.name, team.slug
 `);
 
 export const getQuestionSetQuery = db.prepare(`
-    SELECT  id,
-            name,
-            slug,
-            difficulty
+    SELECT  question_set.id,
+            question_set.name,
+            question_set.slug,
+            question_set.difficulty,
+            question_set_edition.name as edition
     FROM    question_set
-    WHERE   id = ?
+    JOIN    question_set_edition ON question_set_id = question_set.id
+    WHERE   question_set_edition.id = ?
 `)
 
 export const getPlayerLeaderboard = db.prepare(`
@@ -504,6 +530,7 @@ WITH raw_buzzes AS (
     )
     SELECT	buzz.player_id,
             player.name,
+            player.slug,
             tournament.slug as tournament_slug,
             sum(iif(buzz.value > 10, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
@@ -524,7 +551,7 @@ WITH raw_buzzes AS (
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	tournament_id = ?
         AND	exclude_from_individual = 0
-    group by buzz.player_id, player.name
+    group by buzz.player_id, player.name, player.slug
 `)
 
 export const getTeamLeaderboard = db.prepare(`

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default function Tournament({ params }: { params: { slug: string } }) {
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
-    const questionSet = getQuestionSetQuery.get(tournament.question_set_id) as QuestionSet;
+    const questionSet = getQuestionSetQuery.get(tournament.question_set_edition_id) as QuestionSet;
     const tossupCategoryStats = getTossupCategoryStatsQuery.all(tournament.id) as TossupCategory[];
     const bonusCategoryStats = getBonusCategoryStatsQuery.all(tournament.id) as BonusCategory[];
 

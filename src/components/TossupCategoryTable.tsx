@@ -13,7 +13,7 @@ export default function TossupCategoryTable({ tossupCategoryStats }: TossupCateg
         {
             key: "category",
             label: "Category",
-            linkTemplate: "/tournament/{{tournament_slug}}/category-tossup/{{category}}",
+            linkTemplate: "/tournament/{{tournament_slug}}/category-tossup/{{category_slug}}",
             html: true
         },
         {

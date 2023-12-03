@@ -12,7 +12,7 @@ export function PlayerTable({ players }: PlayerTableProps) {
         {
             key: "name",
             label: "Player",
-            linkTemplate: "/tournament/{{tournament_slug}}/player/{{name}}",
+            linkTemplate: "/tournament/{{tournament_slug}}/player/{{slug}}",
             html: true
         },
         {

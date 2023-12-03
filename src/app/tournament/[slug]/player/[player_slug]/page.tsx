@@ -10,10 +10,10 @@ export async function generateStaticParams() {
 
     for (let { id, slug } of tournaments) {
         const players = getPlayersByTournamentQuery.all(id) as Player[];
-        for (const { name } of players) {
+        for (const { slug: player_slug } of players) {
             paths.push({
                 slug,
-                name: encodeURIComponent(name)
+                player_slug
             });
         }
     }
@@ -30,13 +30,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
 }
 
-export default function PlayerPage({ params }: { params: { slug: string, name: string } }) {
+export default function PlayerPage({ params }: { params: { slug: string, player_slug: string } }) {
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
-    const tossupPlayerCategoryStats = getPlayerCategoryStatsQuery.all(tournament.id, tournament.id, decodeURIComponent(params.name)) as TossupConversion[];
+    const tossupPlayerCategoryStats = getPlayerCategoryStatsQuery.all(tournament.id, tournament.id, params.player_slug) as TossupConversion[];
 
     return (
         <Layout tournament={tournament}>
-            <h3 className="text-xl text-center mb-3"><b>{decodeURIComponent(params.name)}</b></h3>
+            <h3 className="text-xl text-center mb-3"><b>{tossupPlayerCategoryStats[0]?.name || 'N/A'}</b></h3>
             <PlayerCategoryTable categories={tossupPlayerCategoryStats} />
         </Layout>
     );

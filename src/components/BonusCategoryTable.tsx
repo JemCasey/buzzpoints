@@ -13,7 +13,7 @@ export default function BonusCategoryTable({ bonusCategoryStats }: BonusCategory
         {
             key: "category",
             label: "Category",
-            linkTemplate: "/tournament/{{tournament_slug}}/category-bonus/{{category}}",
+            linkTemplate: "/tournament/{{tournament_slug}}/category-bonus/{{category_slug}}",
             html: true
         },
         {
