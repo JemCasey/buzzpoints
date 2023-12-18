@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: { slug:string, roun
 export default function BonusPage({ params }: { params: { slug:string, round:string, number:string }}) {
     const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
     const parts = getBonusPartsQuery.all(tournament.id, params.round, params.number) as BonusPart[];
-    const directs = getDirectsByBonusQuery.all(parts[0].id, tournament.id) as BonusDirect[];
+    const directs = getDirectsByBonusQuery.all(tournament.id, params.round, params.number) as BonusDirect[];
     const tournamentRounds = getRoundsForTournamentQuery.all(tournament.id) as Round[];
     const navOptions = getNavOptions(parseInt(params.round), parseInt(params.number), tournamentRounds);
 

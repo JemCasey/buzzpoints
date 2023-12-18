@@ -116,8 +116,15 @@ export const getDirectsByBonusQuery = db.prepare(`
     JOIN    game ON part_one_direct.game_id = game.id
     JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
     OR  (team.id <> team_two_id AND opponent.id = team_two_id)
-    WHERE   bonus.id = ?
-        AND team.tournament_id = ?
+    JOIN    question ON bonus.question_id = question.id
+    JOIN    packet_question ON question.id = packet_question.question_id
+    JOIN    packet ON packet_question.packet_id = packet.id
+    JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
+    JOIN    round ON round.packet_id = packet.id and round.tournament_id = tournament.id
+    WHERE   team.tournament_id = ?
+    AND     round.number = ?
+    AND     packet_question.question_number = ?
 `);
 
 export const getBuzzesByTossupQuery = db.prepare(`
