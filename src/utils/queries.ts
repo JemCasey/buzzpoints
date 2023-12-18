@@ -574,6 +574,7 @@ WITH raw_buzzes AS (
         FROM	raw_buzzes b1
     )
 SELECT  team.name,
+        team.slug,
         tournament.slug as tournament_slug,
         sum(iif(buzz.value > 10, 1, 0)) as powers,
         sum(iif(buzz.value = 10, 1, 0)) as gets,
