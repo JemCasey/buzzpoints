@@ -5,15 +5,16 @@ import Table from "./Table";
 import { formatDecimal, formatPercent } from "@/utils";
 
 type BonusCategoryTableProps = {
-    bonusCategoryStats: BonusCategory[]
+    bonusCategoryStats: BonusCategory[];
+    categoryLinks?: boolean;
 }
 
-export default function BonusCategoryTable({ bonusCategoryStats }: BonusCategoryTableProps) {
+export default function BonusCategoryTable({ bonusCategoryStats, categoryLinks = true }: BonusCategoryTableProps) {
     const columns = [
         {
             key: "category",
             label: "Category",
-            linkTemplate: "/tournament/{{tournament_slug}}/category-bonus/{{category_slug}}",
+            linkTemplate: categoryLinks ? "/tournament/{{tournament_slug}}/category-bonus/{{category_slug}}" : undefined,
             html: true
         },
         {

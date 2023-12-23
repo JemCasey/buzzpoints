@@ -9,11 +9,13 @@ export default function BonusData({ directs }: BonusDataProps) {
     const columns = [
         {
             key: "team_name",
-            label: "Team"
+            label: "Team",
+            linkTemplate: "/tournament/{{tournament_slug}}/team/{{team_slug}}",
         },
         {
             key: "opponent_name",
-            label: "Opponent"
+            label: "Opponent",
+            linkTemplate: "/tournament/{{tournament_slug}}/team/{{opponent_slug}}"
         },
         {
             key: "part_one",

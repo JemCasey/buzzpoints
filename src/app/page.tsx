@@ -1,37 +1,12 @@
-import { getTournamentsQuery } from "@/utils/queries";
-import Layout from "../components/Layout";
-import Table from "../components/Table";
+import Layout from "@/components/Layout";
+import Link from "next/link";
 
 export default function Home() {
-  const tournaments = getTournamentsQuery.all();
-  const columns = [
-    {
-      key: "name",
-      label: "Tournament",
-      linkTemplate: "/tournament/{{slug}}"
-    },
-    {
-      key: "location",
-      label: "Location"
-    },
-    {
-      key: "level",
-      label: "Level"
-    },
-    {
-      key: "start_date",
-      label: "Date",
-      defaultSort: "desc" as const
-    }
-  ];
-
   return (
     <Layout>
-      <h3 className="text-2xl font-bold my-5">Recent Tournaments</h3>
-      <Table
-        columns={columns}
-        data={tournaments}
-         />
+      <div>
+        Welcome to Buzzpoints! Click <Link href="/tournament" className="underline">here to view stats by tournament</Link> or <Link href="/set" className="underline">here to view stats by question set</Link>.
+      </div>
     </Layout>
   );
 }

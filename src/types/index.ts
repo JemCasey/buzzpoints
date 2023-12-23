@@ -3,6 +3,7 @@ export type Tournament = {
     name: string;
     slug: string;
     question_set_edition_id: number;
+    question_set_id: number;
     question_set: QuestionSet;
     location: string;
     level: string;
@@ -16,10 +17,12 @@ export type QuestionSet = {
     slug: string;
     difficulty: string;
     edition: string;
+    edition_count: number;
 }
 
 export type Question = {
     id: number;
+    set_slug: string;
     tournament_slug: string;
     round: number;
     question_number: number;
@@ -29,6 +32,7 @@ export type Question = {
     category: string;
     subcategory: string;
     subsubcategory: string;
+    slug: string;
 }
 
 export type TossupConversion = {
@@ -44,7 +48,7 @@ export type TossupConversion = {
 export type Tossup = Question & {
     question: string;
     answer: string;
-    slug: string;
+    answer_primary: string;
 } & TossupConversion
 
 export type BonusConversion = {
@@ -147,3 +151,26 @@ export type Team = {
     slug: string;
     tournament_id: number;
 }
+
+export type TossupSummary = {
+    tournament_id: number;
+    tournament_name: string;
+    tournament_slug: string;
+    edition: string;
+    round_number: number;
+    question_number: number;
+    tuh: number;
+    conversation_rate: number;
+    power_rate: number;
+    neg_rate: number;
+    average_buzz: number;
+}
+
+export type BonusSummary = {
+    tournament_id: number;
+    tournament_name: string;
+    tournament_slug: string;
+    edition: string;
+    round_number: number;
+    question_number: number;
+} & BonusConversion;

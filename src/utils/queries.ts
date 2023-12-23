@@ -26,6 +26,7 @@ export const getTossupForDetailQuery = db.prepare(`
             packet_question.question_number,
             tossup.question,
             tossup.answer,
+            tossup.answer_primary,
             question.slug,
             question.metadata,
             question.author,
@@ -64,8 +65,50 @@ export const getTossupForDetailQuery = db.prepare(`
         AND packet_question.question_number = ?
 `);
 
+export const getTossupForSetDetailQuery = db.prepare(`
+    SELECT  tossup.id,
+            tossup.question,
+            tossup.answer,
+            tossup.answer_primary,
+            question.slug,
+            question.metadata,
+            question.author,
+            question.editor,
+            question.category,
+            question.subcategory,
+            question.subsubcategory,
+            (
+                SELECT  count(game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                JOIN    packet_question ON packet.id = packet_question.packet_id
+                WHERE   packet_question.question_id = question.id
+                    AND packet_question.question_number <= game.tossups_read
+            ) as heard,
+            (
+                SELECT  AVG(buzz_position)
+                FROM    buzz
+                JOIN    game ON game_id = game.id
+                JOIN    round ON round_id = round.id
+                WHERE   tossup_id = tossup.id
+                    AND buzz.value > 0
+            ) as average_buzz
+    FROM    tossup
+    JOIN    question ON tossup.question_id = question.id
+    WHERE   question.id IN (
+        SELECT  question_id
+        FROM    packet_question
+        JOIN    packet ON packet_question.packet_id = packet.id
+        JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+        WHERE   packet_question.question_id = question.id
+            AND question_set_id = ?
+    ) AND question.slug = ?
+`);
+
 export const getBonusPartsQuery = db.prepare(`
-    SELECT  question_number,
+    SELECT  bonus.id,
+            question_number,
             bonus.leadin,
             bonus_part.part,
             bonus_part.answer,
@@ -91,8 +134,36 @@ export const getBonusPartsQuery = db.prepare(`
     ORDER BY part_number
 `);
 
+export const getBonusPartsBySlugQuery = db.prepare(`
+    SELECT  bonus.id,
+            bonus.leadin,
+            bonus_part.part,
+            bonus_part.answer,
+            bonus_part.difficulty_modifier,
+            bonus_part.value,
+            question.metadata,
+            question.author,
+            question.editor,
+            question.category,
+            question.subcategory,
+            question.subsubcategory
+    FROM    bonus
+    JOIN    question ON bonus.question_id = question.id
+    JOIN    bonus_part on bonus.id = bonus_part.bonus_id
+    WHERE   question.id IN (
+        SELECT  question_id
+        FROM    packet_question
+        JOIN    packet ON packet_question.packet_id = packet.id
+        JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+        WHERE   packet_question.question_id = question.id
+            AND question_set_id = ?
+    )   AND question.slug = ?
+    ORDER BY part_number
+`);
+
 export const getDirectsByBonusQuery = db.prepare(`
-    SELECT  team.name AS team_name,
+    SELECT  tournament.slug AS tournament_slug,
+            team.name AS team_name,
             team.slug AS team_slug,
             opponent.name AS opponent_name,
             opponent.slug AS opponent_slug,
@@ -115,14 +186,16 @@ export const getDirectsByBonusQuery = db.prepare(`
     JOIN    team ON part_one_direct.team_id = team.id
     JOIN    game ON part_one_direct.game_id = game.id
     JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
-    OR  (team.id <> team_two_id AND opponent.id = team_two_id)
-    WHERE   bonus.id = ?
-        AND team.tournament_id = ?
+        OR  (team.id <> team_two_id AND opponent.id = team_two_id)
+    JOIN    tournament ON team.tournament_id = tournament.id
+    WHERE   bonus.id = @bonusId
+        AND (@tournamentId IS NULL OR team.tournament_id = @tournamentId)
 `);
 
 export const getBuzzesByTossupQuery = db.prepare(`
     SELECT  buzz.id,
             player_id,
+            tournament.slug AS tournament_slug,
             player.name AS player_name,
             player.slug AS player_slug,
             team.name AS team_name,
@@ -139,8 +212,33 @@ export const getBuzzesByTossupQuery = db.prepare(`
     JOIN    game ON game_id = game.id
     JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
         OR  (team.id <> team_two_id AND opponent.id = team_two_id)
+    JOIN    tournament ON team.tournament_id = tournament.id
     WHERE   buzz.tossup_id = ?
         AND team.tournament_id = ?
+`);
+
+export const getAllBuzzesByTossupQuery = db.prepare(`
+    SELECT  buzz.id,
+            player_id,
+            tournament.slug AS tournament_slug,
+            player.name AS player_name,
+            player.slug AS player_slug,
+            team.name AS team_name,
+            team.slug AS team_slug,
+            opponent.name AS opponent_name,
+            opponent.slug AS opponent_slug,
+            buzz_position,
+            value
+    FROM    buzz
+    JOIN    player ON player_id = player.id
+    JOIN    team ON team_id = team.id
+    JOIN    game ON game_id = game.id
+    JOIN    round ON game.round_id = round.id
+    JOIN    tournament ON round.tournament_id = tournament.id
+    JOIN    tossup ON buzz.tossup_id = tossup.id
+    JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
+        OR  (team.id <> team_two_id AND opponent.id = team_two_id)
+    WHERE   buzz.tossup_id = ?
 `);
 
 export const getPlayersByTournamentQuery = db.prepare(`
@@ -177,16 +275,18 @@ export const getTournamentsQuery = db.prepare(`
     ORDER BY start_date desc`);
 
 export const getTournamentBySlugQuery = db.prepare(`
-    SELECT  id,
-            name,
-            slug,
-            question_set_edition_id,
-            location,
-            level,
-            start_date,
-            end_date
+    SELECT  tournament.id,
+            tournament.name,
+            tournament.slug,
+            tournament.question_set_edition_id,
+            question_set_edition.question_set_id,
+            tournament.location,
+            tournament.level,
+            tournament.start_date,
+            tournament.end_date
     FROM    tournament
-    WHERE   slug = ?`);
+    JOIN    question_set_edition ON question_set_edition_id = question_set_edition.id
+    WHERE   tournament.slug = ?`);
 
 export const getTossupsByTournamentQuery = db.prepare(`
     SELECT  tossup.id,
@@ -195,6 +295,7 @@ export const getTossupsByTournamentQuery = db.prepare(`
             packet_question.question_number,
             tossup.question,
             tossup.answer,
+            tossup.answer_primary,
             question.slug,
             question.category_main AS category,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
@@ -221,6 +322,38 @@ export const getTossupsByTournamentQuery = db.prepare(`
              question.slug,
              question.category_main`);
 
+export const getTossupsByQuestionSetQuery = db.prepare(`
+    SELECT  tossup.id,
+            tossup.answer,
+            tossup.answer_primary,
+            question_set.slug AS set_slug,
+            question.slug AS slug,
+            question.category_main AS category,
+            (SELECT COUNT(*) FROM packet_question WHERE packet_question.question_id = question.id) AS editions,
+            COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
+            ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS conversion_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS power_rate,
+            ROUND(CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)), 3) AS neg_rate,
+            MIN(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS first_buzz,
+            AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS average_buzz
+    FROM    question_set
+    JOIN    question_set_edition ON question_set.id = question_set_edition.question_set_id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
+    JOIN    round ON tournament.id = tournament_id
+    JOIN    packet ON round.packet_id = packet.id
+    JOIN    packet_question ON packet.id = packet_question.packet_id
+    JOIN    question ON packet_question.question_id = question.id
+    JOIN    tossup ON question.id = tossup.question_id
+    JOIN    game ON round.id = game.round_id
+    LEFT JOIN buzz ON tossup.id = buzz.tossup_id
+        AND	game.id = buzz.game_id
+    WHERE   question_set_id = ?
+    GROUP BY tossup.id,
+        tossup.answer,
+        question_set.slug,
+        question.category_main
+    `);
+
 export const getTossupCategoryStatsQuery = db.prepare(`
     SELECT  category_main AS category,
             question.category_main_slug AS category_slug,
@@ -242,6 +375,31 @@ export const getTossupCategoryStatsQuery = db.prepare(`
 		AND	game.id = buzz.game_id
     WHERE   tournament.id = ?
     GROUP BY question.category_main, question.category_main_slug, tournament.slug
+`);
+
+export const getTossupCategoryStatsForSetQuery = db.prepare(`
+    SELECT  category_main AS category,
+            question.category_main_slug AS category_slug,
+            question_set.slug AS question_set_slug,
+            COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)) AS heard,
+            ROUND(CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)), 3) AS conversion_rate,
+            ROUND(CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)), 3) AS power_rate,
+            ROUND(CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT IIF(question_number <= tossups_read, game.id || '-' || tossup.id, null)), 3) AS neg_rate,
+            MIN(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS first_buzz,
+            AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) AS average_buzz
+    FROM    tournament
+    JOIN    round ON tournament.id = tournament_id
+    JOIN    packet ON round.packet_id = packet.id
+    JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+    JOIN    question_set ON question_set_edition.question_set_id = question_set.id
+    JOIN    packet_question ON packet.id = packet_question.packet_id
+    JOIN    question ON packet_question.question_id = question.id
+    JOIN    tossup ON question.id = tossup.question_id
+    JOIN    game ON round.id = game.round_id
+    LEFT JOIN buzz ON tossup.id = buzz.tossup_id
+		AND	game.id = buzz.game_id
+    WHERE   question_set.id = ?
+    GROUP BY question.category_main, question.category_main_slug, question_set.slug
 `);
 
 export const getPlayerCategoryStatsQuery = db.prepare(`
@@ -381,6 +539,61 @@ GROUP BY tournament.slug,
  medium_part.part_number,
  hard_part.part_number`);
 
+export const getBonusesByQuestionSetQuery = db.prepare(`
+SELECT  question_set.slug AS set_slug,
+question.slug,
+(SELECT COUNT(*) FROM packet_question WHERE packet_question.question_id = question.id) AS editions,
+category_full AS category,
+category_main_slug AS category_slug,
+easy_part.answer AS easy_part,
+medium_part.answer AS medium_part,
+hard_part.answer AS hard_part,
+easy_part.answer_sanitized AS easy_part_sanitized,
+medium_part.answer_sanitized AS medium_part_sanitized,
+hard_part.answer_sanitized AS hard_part_sanitized,
+easy_part.part_number AS easy_part_number,
+medium_part.part_number AS medium_part_number,
+hard_part.part_number AS hard_part_number,
+COUNT(DISTINCT easy_part_direct.id) AS heard,
+CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
+FROM    question_set
+JOIN    question_set_edition ON question_set.id = question_set_edition.question_set_id
+JOIN    packet ON question_set_edition.id = packet.question_set_edition_id
+JOIN    packet_question ON packet.id = packet_question.packet_id
+JOIN    question ON packet_question.question_id = question.id
+JOIN    bonus ON bonus.question_id = question.id
+JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+AND easy_part.difficulty_modifier = 'e'
+JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+AND medium_part.difficulty_modifier = 'm'
+JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+AND hard_part.difficulty_modifier = 'h'
+JOIN    round ON packet.id = round.packet_id
+JOIN    game ON round.id = game.round_id
+LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+AND	game.id = easy_part_direct.game_id
+LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+AND	game.id = medium_part_direct.game_id
+LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+AND	game.id = hard_part_direct.game_id
+WHERE   question_set.id = ?
+GROUP BY question_set.slug,
+ question.slug,
+ category_full,
+ category_main_slug,
+ easy_part.answer,
+ medium_part.answer,
+ hard_part.answer,
+ easy_part.answer_sanitized,
+ medium_part.answer_sanitized,
+ hard_part.answer_sanitized,
+ easy_part.part_number,
+ medium_part.part_number,
+ hard_part.part_number`);
+
 export const getBonusCategoryStatsQuery = db.prepare(`
 SELECT  question.category_main AS category,
         question.category_main_slug AS category_slug,
@@ -410,6 +623,40 @@ LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_d
 LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
     AND	game.id = hard_part_direct.game_id
 WHERE   tournament.id = ?
+GROUP BY question.category_main
+`);
+
+export const getBonusCategoryStatsForSetQuery = db.prepare(`
+SELECT  question.category_main AS category,
+        question.category_main_slug AS category_slug,
+        question_set.slug as question_set_slug,
+        COUNT(DISTINCT easy_part_direct.id) AS heard,
+        CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+        ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+        ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+        ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
+FROM    tournament
+JOIN    round ON tournament.id = tournament_id
+JOIN    packet ON round.packet_id = packet.id
+JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+JOIN    question_set ON question_set_edition.question_set_id = question_set.id
+JOIN    packet_question ON packet.id = packet_question.packet_id
+JOIN    question ON packet_question.question_id = question.id
+JOIN    bonus ON bonus.question_id = question.id
+JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+    AND easy_part.difficulty_modifier = 'e'
+JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+    AND medium_part.difficulty_modifier = 'm'
+JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+    AND hard_part.difficulty_modifier = 'h'
+JOIN    game ON round.id = game.round_id
+LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+    AND	game.id = easy_part_direct.game_id
+LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+    AND	game.id = medium_part_direct.game_id
+LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+    AND	game.id = hard_part_direct.game_id
+WHERE   question_set.id = ?
 GROUP BY question.category_main
 `);
 
@@ -498,6 +745,220 @@ AND     question.category_main_slug = ?
 GROUP BY tournament.slug, category_main, team.name, team.slug
 `);
 
+export const getQuestionSetsQuery = db.prepare(`
+    SELECT  question_set.id,
+            question_set.name,
+            question_set.slug,
+            question_set.difficulty,
+            COUNT(DISTINCT question_set_edition.id) edition_count,
+            MIN(tournament.start_date) first_mirror,
+            COUNT(DISTINCT tournament.id) tournament_count,
+            (
+                SELECT CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct tossup.id || '-' || game.id) as conversion_rate
+                FROM   tossup
+                JOIN   question ON tossup.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id AND game.tossups_read >= packet_question.question_number
+                LEFT JOIN buzz ON game.id = buzz.game_id AND tossup.id = buzz.tossup_id
+                WHERE  question_set_id = question_set.id
+            ) conversion_rate,
+            (
+                SELECT CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(distinct tossup.id || '-' || game.id) as power_rate
+                FROM   tossup
+                JOIN   question ON tossup.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id AND game.tossups_read >= packet_question.question_number
+                LEFT JOIN buzz ON game.id = buzz.game_id AND tossup.id = buzz.tossup_id
+                WHERE  question_set_id = question_set.id
+            ) power_rate,
+            (
+                SELECT CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct tossup.id || '-' || game.id) as neg_rate
+                FROM   tossup
+                JOIN   question ON tossup.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id AND game.tossups_read >= packet_question.question_number
+                LEFT JOIN buzz ON game.id = buzz.game_id AND tossup.id = buzz.tossup_id
+                WHERE  question_set_id = question_set.id
+            ) neg_rate,
+            (
+                SELECT CAST(SUM(bonus_part_direct.value) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as ppb
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+            ) ppb,
+            (
+                SELECT CAST(SUM(IIF(bonus_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as easy_conversion
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+                    AND bonus_part.difficulty_modifier = 'e'
+            ) easy_conversion,
+            (
+                SELECT CAST(SUM(IIF(bonus_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as easy_conversion
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+                    AND bonus_part.difficulty_modifier = 'm'
+            ) medium_conversion,
+            (
+                SELECT CAST(SUM(IIF(bonus_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as easy_conversion
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+                    AND bonus_part.difficulty_modifier = 'h'
+            ) hard_conversion
+    FROM    question_set
+    JOIN    question_set_edition ON question_set.id = question_set_edition.question_set_id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
+    GROUP BY question_set.id, question_set.name, question_set.slug, question_set.difficulty
+    ORDER BY question_set.name DESC
+`)
+
+export const getQuestionSetBySlugQuery = db.prepare(`
+    SELECT  question_set.id,
+            question_set.name,
+            question_set.slug,
+            question_set.difficulty,
+            COUNT(DISTINCT question_set_edition.id) edition_count,
+            MIN(tournament.start_date) first_mirror,
+            COUNT(DISTINCT tournament.id) tournament_count,
+            (
+                SELECT CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct tossup.id || '-' || game.id) as conversion_rate
+                FROM   tossup
+                JOIN   question ON tossup.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id AND game.tossups_read >= packet_question.question_number
+                LEFT JOIN buzz ON game.id = buzz.game_id AND tossup.id = buzz.tossup_id
+                WHERE  question_set_id = question_set.id
+            ) conversion_rate,
+            (
+                SELECT CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(distinct tossup.id || '-' || game.id) as power_rate
+                FROM   tossup
+                JOIN   question ON tossup.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id AND game.tossups_read >= packet_question.question_number
+                LEFT JOIN buzz ON game.id = buzz.game_id AND tossup.id = buzz.tossup_id
+                WHERE  question_set_id = question_set.id
+            ) power_rate,
+            (
+                SELECT CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct tossup.id || '-' || game.id) as neg_rate
+                FROM   tossup
+                JOIN   question ON tossup.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id AND game.tossups_read >= packet_question.question_number
+                LEFT JOIN buzz ON game.id = buzz.game_id AND tossup.id = buzz.tossup_id
+                WHERE  question_set_id = question_set.id
+            ) neg_rate,
+            (
+                SELECT CAST(SUM(bonus_part_direct.value) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as ppb
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+            ) ppb,
+            (
+                SELECT CAST(SUM(IIF(bonus_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as easy_conversion
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+                    AND bonus_part.difficulty_modifier = 'e'
+            ) easy_conversion,
+            (
+                SELECT CAST(SUM(IIF(bonus_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as easy_conversion
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+                    AND bonus_part.difficulty_modifier = 'm'
+            ) medium_conversion,
+            (
+                SELECT CAST(SUM(IIF(bonus_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct bonus.id || '-' || game.id) as easy_conversion
+                FROM   bonus_part
+                JOIN   bonus ON bonus_part.bonus_id = bonus.id
+                JOIN   question ON bonus.question_id = question.id
+                JOIN   packet_question ON question.id = packet_question.question_id
+                JOIN   packet ON packet_question.packet_id = packet.id
+                JOIN   question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+                JOIN   round ON packet.id = round.packet_id
+                JOIN   game ON round.id = game.round_id
+                JOIN   bonus_part_direct ON game.id = bonus_part_direct.game_id AND bonus_part.id = bonus_part_direct.bonus_part_id
+                WHERE  question_set_id = question_set.id
+                    AND bonus_part.difficulty_modifier = 'h'
+            ) hard_conversion
+    FROM    question_set
+    JOIN    question_set_edition ON question_set.id = question_set_id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
+    WHERE   question_set.slug = ?
+    GROUP BY question_set.id,
+            question_set.name,
+            question_set.slug
+`)
+
 export const getQuestionSetQuery = db.prepare(`
     SELECT  question_set.id,
             question_set.name,
@@ -575,6 +1036,7 @@ WITH raw_buzzes AS (
     )
 SELECT  team.name,
         tournament.slug as tournament_slug,
+        team.slug,
         sum(iif(buzz.value > 10, 1, 0)) as powers,
         sum(iif(buzz.value = 10, 1, 0)) as gets,
         sum(iif(buzz.value < 0, 1, 0)) as negs,
@@ -595,13 +1057,181 @@ LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buz
 LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
 WHERE	tournament.id = ?
 AND	exclude_from_individual = 0
-group by team.name
+group by team.name, tournament.slug, team.slug
 `)
 
-export const get = cache(function get<T>(statement:Statement, ...params:any[]) {
+export const getTossupSummaryBySite = db.prepare(`
+SELECT	tournament.id as tournament_id,
+        tournament.name as tournament_name,
+		tournament.slug as tournament_slug,
+		question_set_edition.name as edition,
+		round.number as round_number,
+		packet_question.question_number,
+        question_set.slug as set_slug,
+        question.slug as question_slug,
+		'Y' as exact_match,
+		COUNT(distinct game.id) as tuh,
+		CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as conversion_rate,
+		CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as power_rate,		
+		CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as neg_rate,
+		AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) as average_buzz
+FROM	tossup
+JOIN	question ON tossup.question_id = question.id
+JOIN	packet_question ON question.id = packet_question.question_id
+JOIN	round ON packet_question.packet_id = round.packet_id
+JOIN	tournament ON tournament_id = tournament.id
+JOIN	question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
+JOIN    question_set ON question_set_edition.question_set_id = question_set.id
+JOIN	game ON game.round_id = round.id AND game.tossups_read >= packet_question.question_number
+JOIN	buzz ON game.id = buzz.game_id AND tossup.id = tossup_id
+WHERE	tossup.id = @tossupId
+GROUP BY tournament.id, 
+        tournament.name,
+		tournament.slug,
+		question_set_edition.name,
+		round.number,
+		packet_question.question_number,
+        question.slug
+UNION ALL
+SELECT	tournament.id as tournament_id,
+        tournament.name as tournament_name,
+		tournament.slug as tournament_slug,
+		question_set_edition.name as edition,
+		round.number as round_number,
+		packet_question.question_number,
+        question_set.slug as set_slug,
+        question.slug as question_slug,
+		'N' as exact_match,
+		COUNT(distinct game.id) as tuh,
+		CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as conversion_rate,
+		CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as power_rate,		
+		CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as neg_rate,
+		AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) as average_buzz
+FROM	tossup
+JOIN	question ON tossup.question_id = question.id
+JOIN	packet_question ON question.id = packet_question.question_id
+JOIN	round ON packet_question.packet_id = round.packet_id
+JOIN	tournament ON tournament_id = tournament.id
+JOIN	question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
+JOIN    question_set ON question_set_edition.question_set_id = question_set.id
+JOIN	game ON game.round_id = round.id AND game.tossups_read >= packet_question.question_number
+JOIN	buzz ON game.id = buzz.game_id AND tossup.id = tossup_id
+WHERE	tossup.id <> @tossupId
+    AND question_set_edition.question_set_id = @questionSetId
+    AND (tossup.question = @question
+    OR  (tossup.answer_primary = @answerPrimary AND question.metadata = @metadata))
+GROUP BY tournament.id, 
+        tournament.name,
+		tournament.slug,
+		question_set_edition.name,
+		round.number,
+		packet_question.question_number,
+        question_set.slug,
+        question.slug
+`);
+
+export const getBonusSummaryBySite = db.prepare(`
+SELECT	tournament.id as tournament_id,
+        tournament.name as tournament_name,
+		tournament.slug as tournament_slug,
+		question_set_edition.name as edition,
+		round.number as round_number,
+		packet_question.question_number,
+        question_set.slug as set_slug,
+        question.slug as question_slug,
+		'Y' as exact_match,
+        COUNT(DISTINCT easy_part_direct.id) AS heard,
+        CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+        ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+        ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+        ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
+FROM	bonus
+JOIN	question ON bonus.question_id = question.id
+JOIN	packet_question ON question.id = packet_question.question_id
+JOIN	round ON packet_question.packet_id = round.packet_id
+JOIN	tournament ON tournament_id = tournament.id
+JOIN	question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
+JOIN    question_set ON question_set_edition.question_set_id = question_set.id
+JOIN	game ON game.round_id = round.id
+JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+    AND easy_part.difficulty_modifier = 'e'
+JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+    AND medium_part.difficulty_modifier = 'm'
+JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+    AND hard_part.difficulty_modifier = 'h'
+JOIN    bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+    AND	game.id = easy_part_direct.game_id
+JOIN    bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+    AND	game.id = medium_part_direct.game_id
+JOIN    bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+    AND	game.id = hard_part_direct.game_id
+WHERE	bonus.id = @bonusId
+GROUP BY tournament.id, 
+        tournament.name,
+		tournament.slug,
+		question_set_edition.name,
+		round.number,
+		packet_question.question_number,
+        question.slug
+UNION ALL
+SELECT	tournament.id as tournament_id,
+        tournament.name as tournament_name,
+		tournament.slug as tournament_slug,
+		question_set_edition.name as edition,
+		round.number as round_number,
+		packet_question.question_number,
+        question_set.slug as set_slug,
+        question.slug as question_slug,
+		'N' as exact_match,
+        COUNT(DISTINCT easy_part_direct.id) AS heard,
+        CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+        ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+        ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+        ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
+FROM	bonus
+JOIN	question ON bonus.question_id = question.id
+JOIN	packet_question ON question.id = packet_question.question_id
+JOIN	round ON packet_question.packet_id = round.packet_id
+JOIN	tournament ON tournament_id = tournament.id
+JOIN	question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
+JOIN    question_set ON question_set_edition.question_set_id = question_set.id
+JOIN	game ON game.round_id = round.id
+JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+    AND easy_part.difficulty_modifier = 'e'
+JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+    AND medium_part.difficulty_modifier = 'm'
+JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+    AND hard_part.difficulty_modifier = 'h'
+JOIN    bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+    AND	game.id = easy_part_direct.game_id
+JOIN    bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+    AND	game.id = medium_part_direct.game_id
+JOIN    bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+    AND	game.id = hard_part_direct.game_id
+WHERE	bonus.id <> @bonusId
+    AND question_set_edition.question_set_id = @questionSetId
+    AND (
+        SELECT  COUNT(bonus_part.id)
+        FROM    bonus_part
+        JOIN    bonus_part bonus_part_2 ON bonus_part_2.bonus_id = @bonusId 
+            AND (bonus_part.answer_primary = bonus_part_2.answer_primary 
+            OR  bonus_part.part_sanitized = bonus_part_2.part_sanitized)
+        WHERE   bonus_part.bonus_id = bonus.id
+    ) > 1
+GROUP BY tournament.id, 
+        tournament.name,
+		tournament.slug,
+		question_set_edition.name,
+		round.number,
+		packet_question.question_number,
+        question_set.slug,
+        question.slug
+`);
+
+export const get = cache(function get<T>(statement: Statement, ...params: any[]) {
     return statement.get(...params) as T;
 });
 
-export const all = cache(function all<T>(statement:Statement, ...params:any[]) {
+export const all = cache(function all<T>(statement: Statement, ...params: any[]) {
     return statement.all(...params) as T;
 });

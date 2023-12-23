@@ -11,15 +11,18 @@ export default function TossupBuzzes({ buzzes, buzzpoint, setBuzzpoint }: Tossup
     const columns = [
         {
             key: "player_name",
-            label: "Player"
+            label: "Player",
+            linkTemplate: "/tournament/{{tournament_slug}}/player/{{player_slug}}",
         },
         {
             key: "team_name",
-            label: "Team"
+            label: "Team",
+            linkTemplate: "/tournament/{{tournament_slug}}/team/{{team_slug}}",
         },
         {
             key: "opponent_name",
-            label: "Opponent"
+            label: "Opponent",
+            linkTemplate: "/tournament/{{tournament_slug}}/team/{{opponent_slug}}",
         },
         {
             key: "buzz_position",

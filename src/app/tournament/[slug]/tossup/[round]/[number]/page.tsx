@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
-import { get, getBuzzesByTossupQuery, getRoundsForTournamentQuery, getTossupForDetailQuery, getTossupsByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
-import { Buzz, Round, Tossup, Tournament } from "@/types";
+import { get, getBuzzesByTossupQuery, getRoundsForTournamentQuery, getTossupForDetailQuery, getTossupSummaryBySite, getTossupsByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { Buzz, Round, Tossup, TossupSummary, Tournament } from "@/types";
 import TossupDisplay from "@/components/TossupDisplay";
 import { Metadata } from "next";
 import { getNavOptions, removeTags, shortenAnswerline } from "@/utils";
@@ -40,7 +40,13 @@ export default function TossupPage({ params }: { params: { slug:string, round:st
     const buzzes = getBuzzesByTossupQuery.all(tossup.id, tournament.id) as Buzz[];
     const tournamentRounds = getRoundsForTournamentQuery.all(tournament.id) as Round[];
     const navOptions = getNavOptions(parseInt(params.round), parseInt(params.number), tournamentRounds);
-
+    const tossupSummary = getTossupSummaryBySite.all({
+        tossupId: tossup.id, 
+        questionSetId: tournament.question_set_id, 
+        metadata: tossup.metadata, 
+        answerPrimary: tossup.answer_primary, 
+        question: tossup.question
+    }) as TossupSummary[];
     return (
         <div>
             <Layout tournament={tournament}>
@@ -49,6 +55,7 @@ export default function TossupPage({ params }: { params: { slug:string, round:st
                     buzzes={buzzes} 
                     tournament={tournament} 
                     navOptions={navOptions}
+                    tossupSummary={tossupSummary}
                 />
             </Layout>
         </div>

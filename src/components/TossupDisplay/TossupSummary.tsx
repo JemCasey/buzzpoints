@@ -1,26 +1,38 @@
-import { Buzz, Tossup } from "@/types";
+import { Buzz, Tossup, TossupSummary, Tournament } from "@/types";
 import Table from "../Table";
 import { formatDecimal, formatPercent } from "@/utils";
 
 type TossupSummaryProps = {
-    buzzes: Buzz[];
-    tossup: Tossup;
+    tournament?: Tournament;
+    tossupSummary: TossupSummary[]
 }
 
-export default function TossupSummary({ buzzes, tossup: { heard, average_buzz } }: TossupSummaryProps) {
+export default function TossupSummary({ tournament, tossupSummary }: TossupSummaryProps) {
     let columns = [
+        {
+            key: 'tournament_name',
+            label: 'Tournament',
+            linkTemplate: "/tournament/{{tournament_slug}}/tossup/{{round_number}}/{{question_number}}"
+        },
+        {
+            key: 'edition',
+            label: 'Edition',
+            defaultSort: "asc" as const,
+            linkTemplate: "/set/{{set_slug}}/tossup/{{question_slug}}"
+        },
+        { key: 'exact_match', label: 'Exact Match?' },
+        { key: 'tuh', label: 'TUH' },
         { key: 'conversion_rate', label: 'Conv. %', format: formatPercent },
         { key: 'power_rate', label: 'Power %', format: formatPercent },
+        { key: 'neg_rate', label: 'Neg %', format: formatPercent },
         { key: 'average_buzz', label: 'Average Buzz', format: formatDecimal }
     ];
-    let correctBuzzes = buzzes.filter(b => b.value > 0).map(b => b.buzz_position);
-    let items = [{
-        conversion_rate: correctBuzzes.length / heard,
-        power_rate: buzzes.filter(b => b.value > 10).length / heard,
-        average_buzz
-    }];
 
-    return <div className="my-3">
-        <Table columns={columns} data={items} noSort />
+    return <div className="my-3 mt-3">
+        <Table columns={columns} data={tossupSummary}
+            rowProperties={item => ({
+                className: item.tournament_id === tournament?.id ? "highlighted-row zero" : ""
+            })}
+        />
     </div>;
 }

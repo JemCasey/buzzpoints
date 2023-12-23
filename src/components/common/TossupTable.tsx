@@ -1,8 +1,8 @@
 'use client';
 
-import { Tossup, Word } from "@/types";
+import { Tossup } from "@/types";
 import Table from "../Table";
-import { formatDecimal, formatPercent, removeTags, shortenAnswerline } from "@/utils";
+import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
 
 type TossupTableProps = {
     tossups: Tossup[]
@@ -26,7 +26,8 @@ export function TossupTable({ tossups }: TossupTableProps) {
             key: "answer",
             label: "Answer",
             linkTemplate: "/tournament/{{tournament_slug}}/tossup/{{round}}/{{question_number}}",
-            html: true
+            html: true,
+            sortKey: "answer_primary"
         },
         {
             key: "heard",
@@ -40,6 +41,11 @@ export function TossupTable({ tossups }: TossupTableProps) {
         {
             key: "power_rate",
             label: "Power %",
+            format: formatPercent
+        },
+        {
+            key: "neg_rate",
+            label: "Neg %",
             format: formatPercent
         },
         {
