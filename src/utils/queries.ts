@@ -992,6 +992,8 @@ WITH raw_buzzes AS (
     SELECT	buzz.player_id,
             player.name,
             player.slug,
+            team.name as team_name,
+            team.slug as team_slug,
             tournament.slug as tournament_slug,
             sum(iif(buzz.value > 10, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
@@ -1003,14 +1005,15 @@ WITH raw_buzzes AS (
             sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
             sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks
     FROM	tournament
-    JOIN	round ON tournament_id = tournament.id
+    JOIN	round ON team.tournament_id = tournament.id
     JOIN	game ON round_id = round.id
     JOIN	buzz ON buzz.game_id = game.id
     JOIN	player ON buzz.player_id = player.id
+    JOIN	team ON player.team_id = team.id
     LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
-    WHERE	tournament_id = ?
+    WHERE	team.tournament_id = ?
         AND	exclude_from_individual = 0
     group by buzz.player_id, player.name, player.slug
 `)
@@ -1035,6 +1038,7 @@ WITH raw_buzzes AS (
         FROM	raw_buzzes b1
     )
 SELECT  team.name,
+        team.slug,
         tournament.slug as tournament_slug,
         team.slug,
         sum(iif(buzz.value > 10, 1, 0)) as powers,
