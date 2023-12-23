@@ -16,6 +16,12 @@ export function PlayerTable({ players }: PlayerTableProps) {
             html: true
         },
         {
+            key: "team_name",
+            label: "Team",
+            linkTemplate: "/tournament/{{tournament_slug}}/team/{{team_slug}}",
+            html: true
+        },
+        {
             key: "powers",
             label: "Powers",
             defaultDescending: true

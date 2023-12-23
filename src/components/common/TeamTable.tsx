@@ -12,7 +12,7 @@ export function TeamTable({ teams }: TeamTableProps) {
         {
             key: "name",
             label: "Team",
-            linkTemplate: "/tournament/{{tournament_slug}}/team/{{name}}",
+            linkTemplate: "/tournament/{{tournament_slug}}/team/{{slug}}",
             html: true
         },
         {
