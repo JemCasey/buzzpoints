@@ -1,6 +1,6 @@
 import PlayerCategoryTable from "@/components/PlayerCategoryTable";
 import Layout from "@/components/Layout";
-import { get, getPlayersByTournamentQuery, getPlayerCategoryStatsQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { getTournamentBySlug, getPlayersByTournamentQuery, getPlayerCategoryStatsQuery, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
 import { Player, TossupConversion, Tournament } from "@/types";
 
@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    let tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    let tournament = getTournamentBySlug(params.slug);
 
     return {
         title: `${tournament.name} - Buzzpoints App`,
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default function PlayerPage({ params }: { params: { slug: string, player_slug: string } }) {
-    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    const tournament = getTournamentBySlug(params.slug);
     const tossupPlayerCategoryStats = getPlayerCategoryStatsQuery.all(tournament.id, tournament.id, params.player_slug) as TossupConversion[];
 
     return (

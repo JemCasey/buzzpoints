@@ -2,7 +2,7 @@ import BonusDisplay from "@/components/BonusDisplay";
 import Layout from "@/components/Layout";
 import { Bonus, BonusDirect, BonusPart, BonusSummary, Round, Tournament } from "@/types";
 import { getNavOptions, removeTags, shortenAnswerline } from "@/utils";
-import { get, all, getBonusesByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery, getBonusPartsQuery, getDirectsByBonusQuery, getRoundsForTournamentQuery, getBonusSummaryBySite } from "@/utils/queries";
+import { getTournamentBySlug, all, getBonusesByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery, getBonusPartsQuery, getDirectsByBonusQuery, getRoundsForTournamentQuery, getBonusSummaryBySite } from "@/utils/queries";
 import { Metadata } from "next";
 
 export const generateStaticParams = () => {
@@ -25,7 +25,7 @@ export const generateStaticParams = () => {
 }
 
 export async function generateMetadata({ params }: { params: { slug:string, round:string, number:string }}): Promise<Metadata> {
-    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    const tournament = getTournamentBySlug(params.slug);
     const bonusParts = getBonusPartsQuery.all(tournament.id, params.round, params.number) as BonusPart[];
     
     return {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: { slug:string, roun
 }
 
 export default function BonusPage({ params }: { params: { slug:string, round:string, number:string }}) {
-    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    const tournament = getTournamentBySlug(params.slug);
     const parts = getBonusPartsQuery.all(tournament.id, params.round, params.number) as BonusPart[];
     const directs = getDirectsByBonusQuery.all({
         bonusId: parts[0].id, 

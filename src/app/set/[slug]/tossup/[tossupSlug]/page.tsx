@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { get, getAllBuzzesByTossupQuery, getQuestionSetBySlugQuery, getQuestionSetsQuery, getTossupForSetDetailQuery, getTossupSummaryBySite, getTossupsByQuestionSetQuery, getTossupsByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { getAllBuzzesByTossupQuery, getQuestionSetsQuery, getTossupForSetDetailQuery, getTossupSummaryBySite, getTossupsByQuestionSetQuery, getQuestionSetBySlug, getQuestionSetBySlugQuery } from "@/utils/queries";
 import { Buzz, QuestionSet, Tossup, TossupSummary } from "@/types";
 import TossupDisplay from "@/components/TossupDisplay";
 import { Metadata } from "next";
@@ -23,7 +23,7 @@ export const generateStaticParams = () => {
 }
 
 export async function generateMetadata({ params }: { params: { slug:string, tossupSlug:string }}): Promise<Metadata> {
-    const questionSet = get<QuestionSet>(getQuestionSetBySlugQuery, params.slug);
+    const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
     const tossup = getTossupForSetDetailQuery.get(questionSet.id, params.tossupSlug) as Tossup;
 
     return {
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: { slug:string, toss
 }
 
 export default function TossupPage({ params }: { params: { slug:string, tossupSlug:string }}) {
-    const questionSet = get<QuestionSet>(getQuestionSetBySlugQuery, params.slug);
+    const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
     const tossup = getTossupForSetDetailQuery.get(questionSet.id, params.tossupSlug) as Tossup;
     const buzzes = getAllBuzzesByTossupQuery.all(tossup.id) as Buzz[];
     const tossupSummary = getTossupSummaryBySite.all({

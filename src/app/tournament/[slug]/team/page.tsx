@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { TeamTable } from "@/components/common/TeamTable";
 import { Tossup, Tournament } from "@/types";
-import { get, getTeamLeaderboard, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { getTournamentBySlug, getTeamLeaderboard, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
 
 export const generateStaticParams = () => {
@@ -11,7 +11,7 @@ export const generateStaticParams = () => {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    let tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    let tournament = getTournamentBySlug(params.slug);
 
     return {
         title: `${tournament.name} Teams - Buzzpoints App`,
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default function TeamPage({ params }: { params: { slug: string } }) {
-    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    const tournament = getTournamentBySlug(params.slug);
     const teams = getTeamLeaderboard.all(tournament!.id, tournament!.id) as Tossup[];
 
     return <Layout tournament={tournament}>

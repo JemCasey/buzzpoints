@@ -2,7 +2,7 @@ import BonusDisplay from "@/components/BonusDisplay";
 import Layout from "@/components/Layout";
 import { Bonus, BonusDirect, BonusPart, BonusSummary, QuestionSet } from "@/types";
 import { removeTags, shortenAnswerline } from "@/utils";
-import { get, getDirectsByBonusQuery, getBonusesByQuestionSetQuery, getQuestionSetsQuery, getQuestionSetBySlugQuery, getBonusPartsBySlugQuery, getBonusSummaryBySite } from "@/utils/queries";
+import { getDirectsByBonusQuery, getBonusesByQuestionSetQuery, getQuestionSetsQuery, getBonusPartsBySlugQuery, getBonusSummaryBySite, getQuestionSetBySlugQuery } from "@/utils/queries";
 import { Metadata } from "next";
 
 export const generateStaticParams = () => {
@@ -24,7 +24,7 @@ export const generateStaticParams = () => {
 }
 
 export async function generateMetadata({ params }: { params: { slug:string, bonusSlug:string }}): Promise<Metadata> {
-    const questionSet = get<QuestionSet>(getQuestionSetBySlugQuery, params.slug);
+    const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
     const bonusParts = getBonusPartsBySlugQuery.all(questionSet.id, params.bonusSlug) as BonusPart[];
     
     return {
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: { slug:string, bonu
 }
 
 export default function BonusPage({ params }: { params: { slug:string, bonusSlug:string }}) {
-    const questionSet = get<QuestionSet>(getQuestionSetBySlugQuery, params.slug);
+    const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
     const parts = getBonusPartsBySlugQuery.all(questionSet.id, params.bonusSlug) as BonusPart[];
     const directs = getDirectsByBonusQuery.all({
         bonusId: parts[0].id, 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import TournamentSummary from "@/components/TournamentSummary";
 import TossupCategoryTable from "@/components/TossupCategoryTable";
 import Layout from "@/components/Layout";
-import { get, getBonusCategoryStatsQuery, getQuestionSetQuery, getTossupCategoryStatsQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { getTournamentBySlug, getBonusCategoryStatsQuery, getQuestionSetQuery, getTossupCategoryStatsQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
 import { BonusCategory, QuestionSet, TossupCategory, Tournament } from "@/types";
 import BonusCategoryTable from "@/components/BonusCategoryTable";
@@ -14,7 +14,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    let tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    let tournament = getTournamentBySlug(params.slug);
 
     return {
         title: `${tournament.name} - Buzzpoints App`,
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default function Tournament({ params }: { params: { slug: string } }) {
-    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    const tournament = getTournamentBySlug(params.slug);
     const questionSet = getQuestionSetQuery.get(tournament.question_set_edition_id) as QuestionSet;
     const tossupCategoryStats = getTossupCategoryStatsQuery.all(tournament.id) as TossupCategory[];
     const bonusCategoryStats = getBonusCategoryStatsQuery.all(tournament.id) as BonusCategory[];

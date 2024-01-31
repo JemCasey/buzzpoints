@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { get, getBuzzesByTossupQuery, getRoundsForTournamentQuery, getTossupForDetailQuery, getTossupSummaryBySite, getTossupsByTournamentQuery, getTournamentBySlugQuery, getTournamentsQuery } from "@/utils/queries";
+import { getTournamentBySlug, getBuzzesByTossupQuery, getRoundsForTournamentQuery, getTossupForDetailQuery, getTossupSummaryBySite, getTossupsByTournamentQuery, getTournamentsQuery } from "@/utils/queries";
 import { Buzz, Round, Tossup, TossupSummary, Tournament } from "@/types";
 import TossupDisplay from "@/components/TossupDisplay";
 import { Metadata } from "next";
@@ -25,7 +25,7 @@ export const generateStaticParams = () => {
 }
 
 export async function generateMetadata({ params }: { params: { slug:string, round:string, number:string }}): Promise<Metadata> {
-    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    const tournament = getTournamentBySlug(params.slug);
     const tossup = getTossupForDetailQuery.get(tournament.id, params.round, params.number) as Tossup;
 
     return {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: { slug:string, roun
 }
 
 export default function TossupPage({ params }: { params: { slug:string, round:string, number:string }}) {
-    const tournament = get<Tournament>(getTournamentBySlugQuery, params.slug);
+    const tournament = getTournamentBySlug(params.slug);
     const tossup = getTossupForDetailQuery.get(tournament.id, params.round, params.number) as Tossup;
     const buzzes = getBuzzesByTossupQuery.all(tossup.id, tournament.id) as Buzz[];
     const tournamentRounds = getRoundsForTournamentQuery.all(tournament.id) as Round[];
@@ -47,6 +47,7 @@ export default function TossupPage({ params }: { params: { slug:string, round:st
         answerPrimary: tossup.answer_primary, 
         question: tossup.question
     }) as TossupSummary[];
+
     return (
         <div>
             <Layout tournament={tournament}>

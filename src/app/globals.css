@@ -37,7 +37,7 @@ body {
   /* making the buzzpoint data a scrollable box */
   .buzzes {
     overflow-y: auto;
-    max-height: 95vh;
+    max-height: 70vh;
     border-bottom: 1px solid #ccc;
   }
 }

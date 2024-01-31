@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { get, getBonusesByQuestionSetQuery, getQuestionSetBySlugQuery, getQuestionSetsQuery, } from "@/utils/queries";
+import { getBonusesByQuestionSetQuery, getQuestionSetsQuery, getQuestionSetBySlugQuery, } from "@/utils/queries";
 import { Bonus, QuestionSet } from "@/types";
 import { Metadata } from "next";
 import { TournamentBonusTable } from "@/components/common/TournamentBonusTable";
@@ -11,7 +11,7 @@ export const generateStaticParams = () => {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-    let questionSet = get<QuestionSet>(getQuestionSetBySlugQuery, params.slug);
+    const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
 
     return {
         title: `${questionSet.name} Bonuses - Buzzpoints App`,
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
 }
 export default function BonusesPage({ params }: { params: { slug: string } }) {
-    const questionSet = get<QuestionSet>(getQuestionSetBySlugQuery, params.slug);
+    const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
     const bonuses = getBonusesByQuestionSetQuery.all(questionSet!.id) as Bonus[];
 
     return (

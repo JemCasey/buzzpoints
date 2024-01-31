@@ -1,3 +1,4 @@
+import { Question, QuestionSet, Tournament } from '@/types';
 import Database, { Statement } from 'better-sqlite3';
 import { cache } from 'react';
 
@@ -855,6 +856,15 @@ export const getQuestionSetBySlugQuery = db.prepare(`
     SELECT  question_set.id,
             question_set.name,
             question_set.slug,
+            question_set.difficulty
+    FROM    question_set
+    WHERE   question_set.slug = ?
+`);
+            
+export const getQuestionSetDetailedBySlugQuery = db.prepare(`
+    SELECT  question_set.id,
+            question_set.name,
+            question_set.slug,
             question_set.difficulty,
             COUNT(DISTINCT question_set_edition.id) edition_count,
             MIN(tournament.start_date) first_mirror,
@@ -1231,6 +1241,23 @@ GROUP BY tournament.id,
         question_set.slug,
         question.slug
 `);
+
+const questionSetDictionary = {} as any;
+const tournamentDictionary = {} as any;
+
+export const getQuestionSetBySlug = (slug:any) => {
+    if (!questionSetDictionary[slug])
+        questionSetDictionary[slug] = getQuestionSetDetailedBySlugQuery.get(slug);
+
+    return questionSetDictionary[slug] as QuestionSet;
+}
+
+export const getTournamentBySlug = (slug:any) => {
+    if (!tournamentDictionary[slug])
+    tournamentDictionary[slug] = getTournamentBySlugQuery.get(slug);
+
+    return tournamentDictionary[slug] as Tournament;
+}
 
 export const get = cache(function get<T>(statement: Statement, ...params: any[]) {
     return statement.get(...params) as T;
