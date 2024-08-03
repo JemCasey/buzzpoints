@@ -1,6 +1,6 @@
 import PlayerCategoryTable from "@/components/PlayerCategoryTable";
 import Layout from "@/components/Layout";
-import { getTournamentBySlug, getPlayersByTournamentQuery, getPlayerCategoryStatsQuery, getTournamentsQuery } from "@/utils/queries";
+import { getTournamentBySlug, getPlayersByTournamentQuery, getPlayerCategoryStatsQuery, getTournamentsQuery, getTeamByPlayerQuery } from "@/utils/queries";
 import { Metadata } from "next";
 import { Player, TossupConversion, Tournament } from "@/types";
 
@@ -33,10 +33,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default function PlayerPage({ params }: { params: { slug: string, player_slug: string } }) {
     const tournament = getTournamentBySlug(params.slug);
     const tossupPlayerCategoryStats = getPlayerCategoryStatsQuery.all(tournament.id, tournament.id, params.player_slug) as TossupConversion[];
+    const player = getTeamByPlayerQuery.all(params.player_slug) as Player[];
 
     return (
         <Layout tournament={tournament}>
-            <h3 className="text-xl text-center mb-3"><b>{tossupPlayerCategoryStats[0]?.name || 'N/A'}</b></h3>
+            <h3 className="text-xl text-center mb-3">
+                <b>{player[0]?.name || 'N/A'}</b>
+                <br></br>
+                ({player[0]?.team_name || 'N/A'})
+            </h3>
             <PlayerCategoryTable categories={tossupPlayerCategoryStats} />
         </Layout>
     );

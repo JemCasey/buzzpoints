@@ -142,6 +142,7 @@ export type Player = {
     name: string;
     slug: string;
     tournament_id: number;
+    team_name: string;
     team_id: number;
 }
 

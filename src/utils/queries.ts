@@ -253,7 +253,32 @@ export const getPlayersByTournamentQuery = db.prepare(`
     FROM    player
     JOIN    team ON player.team_id = team.id
     WHERE   team.tournament_id = ?
-    ORDER BY player.name`);
+    ORDER BY player.name
+`);
+
+export const getTeamByPlayerQuery = db.prepare(`
+    SELECT  player.id,
+            player.name,
+            player.slug,
+            team.name AS team_name,
+            team.slug AS team_slug,
+            team.id AS team_id
+    FROM    player
+    JOIN    team ON player.team_id = team.id
+    WHERE   player.slug = ?
+`);
+
+export const getPlayersByTeamQuery = db.prepare(`
+    SELECT  player.id,
+            player.name,
+            player.slug,
+            team.name AS team_name,
+            team.slug AS team_slug,
+            team.id AS team_id
+    FROM    player
+    JOIN    team ON player.team_id = team.id
+    WHERE   team.slug = ?
+`);
 
 export const getTeamsByTournamentQuery = db.prepare(`
     SELECT  team.id,
@@ -262,7 +287,8 @@ export const getTeamsByTournamentQuery = db.prepare(`
             team.tournament_id
     FROM    team
     WHERE   team.tournament_id = ?
-    ORDER BY team.name`);
+    ORDER BY team.name
+`);
 
 export const getTournamentsQuery = db.prepare(`
     SELECT  id,
@@ -489,7 +515,7 @@ export const getBonusesByTournamentQuery = db.prepare(`
 SELECT  tournament.slug AS tournament_slug,
 round.number AS round,
 question_number,
-category_full AS category,
+category_main AS category,
 category_main_slug AS category_slug,
 easy_part.answer AS easy_part,
 medium_part.answer AS medium_part,
@@ -528,7 +554,7 @@ WHERE   tournament.id = ?
 GROUP BY tournament.slug,
  round.number,
  question_number,
- category_full,
+ category_main,
  category_main_slug,
  easy_part.answer,
  medium_part.answer,
@@ -544,7 +570,7 @@ export const getBonusesByQuestionSetQuery = db.prepare(`
 SELECT  question_set.slug AS set_slug,
 question.slug,
 (SELECT COUNT(*) FROM packet_question WHERE packet_question.question_id = question.id) AS editions,
-category_full AS category,
+category_main AS category,
 category_main_slug AS category_slug,
 easy_part.answer AS easy_part,
 medium_part.answer AS medium_part,
@@ -583,7 +609,7 @@ AND	game.id = hard_part_direct.game_id
 WHERE   question_set.id = ?
 GROUP BY question_set.slug,
  question.slug,
- category_full,
+ category_main,
  category_main_slug,
  easy_part.answer,
  medium_part.answer,
@@ -860,7 +886,7 @@ export const getQuestionSetBySlugQuery = db.prepare(`
     FROM    question_set
     WHERE   question_set.slug = ?
 `);
-            
+
 export const getQuestionSetDetailedBySlugQuery = db.prepare(`
     SELECT  question_set.id,
             question_set.name,
@@ -1083,10 +1109,9 @@ SELECT	tournament.id as tournament_id,
 		packet_question.question_number,
         question_set.slug as set_slug,
         question.slug as question_slug,
-		'Y' as exact_match,
 		COUNT(distinct game.id) as tuh,
 		CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as conversion_rate,
-		CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as power_rate,		
+		CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as power_rate,
 		CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as neg_rate,
 		AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) as average_buzz
 FROM	tossup
@@ -1099,48 +1124,12 @@ JOIN    question_set ON question_set_edition.question_set_id = question_set.id
 JOIN	game ON game.round_id = round.id AND game.tossups_read >= packet_question.question_number
 JOIN	buzz ON game.id = buzz.game_id AND tossup.id = tossup_id
 WHERE	tossup.id = @tossupId
-GROUP BY tournament.id, 
+GROUP BY tournament.id,
         tournament.name,
 		tournament.slug,
 		question_set_edition.name,
 		round.number,
 		packet_question.question_number,
-        question.slug
-UNION ALL
-SELECT	tournament.id as tournament_id,
-        tournament.name as tournament_name,
-		tournament.slug as tournament_slug,
-		question_set_edition.name as edition,
-		round.number as round_number,
-		packet_question.question_number,
-        question_set.slug as set_slug,
-        question.slug as question_slug,
-		'N' as exact_match,
-		COUNT(distinct game.id) as tuh,
-		CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as conversion_rate,
-		CAST(SUM(IIF(buzz.value > 10, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as power_rate,		
-		CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as neg_rate,
-		AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) as average_buzz
-FROM	tossup
-JOIN	question ON tossup.question_id = question.id
-JOIN	packet_question ON question.id = packet_question.question_id
-JOIN	round ON packet_question.packet_id = round.packet_id
-JOIN	tournament ON tournament_id = tournament.id
-JOIN	question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
-JOIN    question_set ON question_set_edition.question_set_id = question_set.id
-JOIN	game ON game.round_id = round.id AND game.tossups_read >= packet_question.question_number
-JOIN	buzz ON game.id = buzz.game_id AND tossup.id = tossup_id
-WHERE	tossup.id <> @tossupId
-    AND question_set_edition.question_set_id = @questionSetId
-    AND (tossup.question = @question
-    OR  (tossup.answer_primary = @answerPrimary AND question.metadata = @metadata))
-GROUP BY tournament.id, 
-        tournament.name,
-		tournament.slug,
-		question_set_edition.name,
-		round.number,
-		packet_question.question_number,
-        question_set.slug,
         question.slug
 `);
 
@@ -1180,7 +1169,7 @@ JOIN    bonus_part_direct medium_part_direct ON medium_part.id = medium_part_dir
 JOIN    bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
     AND	game.id = hard_part_direct.game_id
 WHERE	bonus.id = @bonusId
-GROUP BY tournament.id, 
+GROUP BY tournament.id,
         tournament.name,
 		tournament.slug,
 		question_set_edition.name,
@@ -1227,12 +1216,12 @@ WHERE	bonus.id <> @bonusId
     AND (
         SELECT  COUNT(bonus_part.id)
         FROM    bonus_part
-        JOIN    bonus_part bonus_part_2 ON bonus_part_2.bonus_id = @bonusId 
-            AND (bonus_part.answer_primary = bonus_part_2.answer_primary 
+        JOIN    bonus_part bonus_part_2 ON bonus_part_2.bonus_id = @bonusId
+            AND (bonus_part.answer_primary = bonus_part_2.answer_primary
             OR  bonus_part.part_sanitized = bonus_part_2.part_sanitized)
         WHERE   bonus_part.bonus_id = bonus.id
     ) > 1
-GROUP BY tournament.id, 
+GROUP BY tournament.id,
         tournament.name,
 		tournament.slug,
 		question_set_edition.name,
