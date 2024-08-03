@@ -1,3 +1,4 @@
+import Link from "next/link";
 import PlayerCategoryTable from "@/components/PlayerCategoryTable";
 import Layout from "@/components/Layout";
 import { getTournamentBySlug, getPlayersByTournamentQuery, getPlayerCategoryStatsQuery, getTournamentsQuery, getTeamByPlayerQuery } from "@/utils/queries";
@@ -40,7 +41,9 @@ export default function PlayerPage({ params }: { params: { slug: string, player_
             <h3 className="text-xl text-center mb-3">
                 <b>{player[0]?.name || 'N/A'}</b>
                 <br></br>
-                ({player[0]?.team_name || 'N/A'})
+                <Link href={`/tournament/${params.slug}/team/${player[0]?.team_slug}`} className="underline">
+                {player[0]?.team_name || 'N/A'}
+                </Link>
             </h3>
             <PlayerCategoryTable categories={tossupPlayerCategoryStats} />
         </Layout>

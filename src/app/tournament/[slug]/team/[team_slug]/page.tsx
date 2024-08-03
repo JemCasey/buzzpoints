@@ -1,3 +1,4 @@
+import Link from "next/link";
 import BonusCategoryTable from "@/components/BonusCategoryTable";
 import Layout from "@/components/Layout";
 import { getTournamentBySlug, getTeamsByTournamentQuery, getTeamCategoryStatsQuery, getPlayersByTeamQuery, getTournamentsQuery } from "@/utils/queries";
@@ -35,12 +36,20 @@ export default function TeamPage({ params }: { params: { slug: string, team_slug
     const bonusTeamCategoryStats = getTeamCategoryStatsQuery.all(tournament.id, params.team_slug) as BonusCategory[];
     const players = getPlayersByTeamQuery.all(params.team_slug) as Player[];
 
+    const playerLinks = players.map((x, i, array) =>
+        i === array.length - 1
+        ?
+        <><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link></>
+        :
+        <><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link> | </>
+    );
+
     return (
         <Layout tournament={tournament}>
             <h3 className="text-xl text-center mb-3">
                 <b>{players[0].team_name}</b>
                 <br></br>
-                ({players.map(value => value.name).join(", ")})
+                {playerLinks}
             </h3>
             <BonusCategoryTable bonusCategoryStats={bonusTeamCategoryStats} />
         </Layout>
