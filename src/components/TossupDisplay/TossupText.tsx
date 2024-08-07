@@ -13,7 +13,7 @@ type TossupText = {
 
 export default function TossupText({ tossup: { question, answer, metadata }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
     // keywords--for now just the the powermark--shouldn't render as clickable words
-    const keywords = ["(*)"];
+    const keywords = ["(*)", "[*]", "{*}"];
     const getWords = (question:string) => {
         let emphasis = false;
         let bold = false;
