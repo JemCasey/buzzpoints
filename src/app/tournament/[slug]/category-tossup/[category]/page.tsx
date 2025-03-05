@@ -1,8 +1,8 @@
 import Layout from "@/components/Layout";
-import { PlayerTable } from "@/components/common/PlayerTable";
-import { Tossup, Tournament } from "@/types";
-import { getTournamentBySlug, getCategoriesForTournamentQuery, getPlayerCategoryLeaderboard, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
+import { getTournamentBySlug, getCategoriesForTournamentQuery, getPlayerCategoryLeaderboard, getTournamentsQuery } from "@/utils/queries";
+import { Tournament, Tossup, } from "@/types";
+import { PlayerTable } from "@/components/common/PlayerTable";
 
 export async function generateStaticParams() {
     const tournaments = getTournamentsQuery.all() as Tournament[];
@@ -22,21 +22,29 @@ export async function generateStaticParams() {
     return paths;
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const params = await props.params;
     let tournament = getTournamentBySlug(params.slug);
 
     return {
-        title: `${tournament.name} Players - Buzzpoints App`,
+        title: `${tournament.name} Players - Buzzpoints`,
         description: `Category leaderboard for ${tournament!.name}`,
     };
 }
 
-export default function CategoryTossupPage({ params }: { params: { slug: string, category: string } }) {
+export default async function CategoryTossupPage(props: { params: Promise<{ slug: string, category: string }> }) {
+    const params = await props.params;
     const tournament = getTournamentBySlug(params.slug);
     const players = getPlayerCategoryLeaderboard.all(tournament!.id, tournament!.id, params.category) as Tossup[];
 
     return <Layout tournament={tournament}>
         <h3 className="text-xl text-center mb-3"><b>{players[0]?.category || "N/A"}</b></h3>
-        <PlayerTable players={players} />
+        <PlayerTable
+            players={players}
+            mode="tournament"
+            slug={params.slug}
+            format="powers"
+        />
+        {/** TODO: don't hardcode format */}
     </Layout>
 }
