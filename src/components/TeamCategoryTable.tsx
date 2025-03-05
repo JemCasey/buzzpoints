@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { BonusCategory } from "@/types";
 import Table from "./Table";
@@ -6,38 +6,44 @@ import { formatDecimal, formatPercent } from "@/utils";
 
 type TeamCategoryTableProps = {
     bonusCategoryStats: BonusCategory[]
+    mode?: "set" | "tournament"
 }
 
-export default function TeamCategoryTable({ bonusCategoryStats }: TeamCategoryTableProps) {
+export default function TeamCategoryTable({ bonusCategoryStats, mode }: TeamCategoryTableProps) {
     const columns = [
         {
             key: "name",
-            label: "Team Name",
-            linkTemplate: "/tournament/{{slug}}/team/{{teamSlug}}"
+            label: "Team",
+            linkTemplate: `/${mode}/{{slug}}/team/{{teamSlug}}`
         },
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            defaultDescending: true
         },
         {
             key: "ppb",
             label: "PPB",
-            format: formatDecimal
+            format: formatDecimal,
+            defaultDescending: true
         },
         {
             key: "easy_conversion",
             label: "Easy %",
-            format: formatPercent
+            format: formatPercent,
+            defaultDescending: true
         },
         {
             key: "medium_conversion",
             label: "Medium %",
-            format: formatPercent
+            format: formatPercent,
+            defaultDescending: true
         },
         {
             key: "hard_conversion",
             label: "Hard %",
-            format: formatPercent
+            format: formatPercent,
+            defaultDescending: true
         }
     ];
 

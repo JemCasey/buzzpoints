@@ -1,23 +1,16 @@
-'use client';
+"use client";
 
 import { Tossup } from "@/types";
 import Table from "../Table";
 import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
 
 type TossupTableProps = {
-    tossups: Tossup[]
+    tossups: Tossup[];
+    format?: "superpowers" | "powers" | "acf";
 }
 
-export function TossupTable({ tossups }: TossupTableProps) {
+export function TossupTable({ tossups, format }: TossupTableProps) {
     const columns = [
-        {
-            key: "round",
-            label: "Round"
-        },
-        {
-            key: "question_number",
-            label: "#"
-        },
         {
             key: "category",
             label: "Category"
@@ -25,9 +18,13 @@ export function TossupTable({ tossups }: TossupTableProps) {
         {
             key: "answer",
             label: "Answer",
-            linkTemplate: "/tournament/{{tournament_slug}}/tossup/{{round}}/{{question_number}}",
+            linkTemplate: "/set/{{set_slug}}/tossup/{{slug}}",
             html: true,
             sortKey: "answer_primary"
+        },
+        {
+            key: "editions",
+            label: "Editions"
         },
         {
             key: "heard",
@@ -38,11 +35,16 @@ export function TossupTable({ tossups }: TossupTableProps) {
             label: "Conv. %",
             format: formatPercent
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpower_rate",
+            label: "Superpower %",
+            format: formatPercent,
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "power_rate",
             label: "Power %",
-            format: formatPercent
-        },
+            format: formatPercent,
+        }] : []),
         {
             key: "neg_rate",
             label: "Neg %",

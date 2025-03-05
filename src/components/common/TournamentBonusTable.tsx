@@ -1,23 +1,27 @@
-'use client';
+"use client";
 
 import { Bonus } from "@/types";
 import Table from "../Table";
 import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
 import Link from "next/link";
 
-type BonusTableProps = {
+type TournamentBonusTableProps = {
     bonuses: Bonus[]
 }
 
-export function TournamentBonusTable({ bonuses }: BonusTableProps) {
+export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
     const columns = [
+        {
+            key: "round",
+            label: "Round"
+        },
+        {
+            key: "question_number",
+            label: "#"
+        },
         {
             key: "category",
             label: "Category"
-        },
-        {
-            key: "editions",
-            label: "Editions"
         },
         {
             key: "heard",
@@ -32,10 +36,10 @@ export function TournamentBonusTable({ bonuses }: BonusTableProps) {
             key: "easy_part",
             label: "Easy",
             sortKey: "easy_part_sanitized",
-            render: (item:Bonus) => (
+            render: (item: Bonus) => (
                 <>
                     <Link
-                        href={`/set/${item.set_slug}/bonus/${item.slug}`}
+                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.easy_part }}></span>
@@ -53,10 +57,10 @@ export function TournamentBonusTable({ bonuses }: BonusTableProps) {
             key: "medium_part",
             label: "Medium",
             sortKey: "medium_part_sanitized",
-            render: (item:Bonus) => (
+            render: (item: Bonus) => (
                 <>
                     <Link
-                        href={`/set/${item.set_slug}/bonus/${item.slug}`}
+                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.medium_part }}></span>
@@ -74,10 +78,10 @@ export function TournamentBonusTable({ bonuses }: BonusTableProps) {
             key: "hard_part",
             label: "Hard",
             sortKey: "hard_part_sanitized",
-            render: (item:Bonus) => (
+            render: (item: Bonus) => (
                 <>
                     <Link
-                        href={`/set/${item.set_slug}/bonus/${item.slug}`}
+                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.hard_part }}></span>

@@ -31,7 +31,7 @@ export default function Home() {
       <Table
         columns={columns}
         data={tournaments}
-         />
+      />
     </Layout>
   );
 }

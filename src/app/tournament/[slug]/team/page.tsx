@@ -1,8 +1,8 @@
 import Layout from "@/components/Layout";
-import { TeamTable } from "@/components/common/TeamTable";
-import { Tossup, Tournament } from "@/types";
-import { getTournamentBySlug, getTeamLeaderboard, getTournamentsQuery } from "@/utils/queries";
 import { Metadata } from "next";
+import { getTournamentBySlug, getTeamLeaderboard, getTournamentsQuery } from "@/utils/queries";
+import { Tournament, Tossup, } from "@/types";
+import { TeamTable } from "@/components/common/TeamTable";
 
 export const generateStaticParams = () => {
     const tournaments: Tournament[] = getTournamentsQuery.all() as Tournament[];
@@ -10,20 +10,28 @@ export const generateStaticParams = () => {
     return tournaments.map(({ slug }) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const params = await props.params;
     let tournament = getTournamentBySlug(params.slug);
 
     return {
-        title: `${tournament.name} Teams - Buzzpoints App`,
+        title: `${tournament.name} Teams - Buzzpoints`,
         description: `Team data for ${tournament!.name}`,
     };
 }
 
-export default function TeamPage({ params }: { params: { slug: string } }) {
+export default async function TeamPage(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
     const tournament = getTournamentBySlug(params.slug);
     const teams = getTeamLeaderboard.all(tournament!.id, tournament!.id) as Tossup[];
 
     return <Layout tournament={tournament}>
-        <TeamTable teams={teams} />
+        <TeamTable
+            teams={teams}
+            mode="tournament"
+            slug={params.slug}
+            format="powers"
+        />
+        {/** TODO: don't hardcode format */}
     </Layout>
 }

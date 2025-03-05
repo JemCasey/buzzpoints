@@ -2,29 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
+:root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-} */
+  background: rgb(var(--background-end-rgb));
+}
 
 
 /* this will ensure table rows that are being hovered will be highlighted */
@@ -43,7 +30,7 @@ body {
 }
 
 .buzzpoint-word {
-  background-color: #DEEDFF;
+  background-color: #5895e0;
   cursor: pointer;
   border-radius: 5px;
   padding: 1px 5px;
@@ -51,28 +38,72 @@ body {
 
 rt {
   font-size: 0.9rem;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: serif;
   color: #424242;
 }
 
+rt .superpower {
+  color: #318fce;
+}
+
+rt .power {
+  color: #1d9060;
+}
+
 rt .get {
-  color: #0DA51C;
+  color: #1e9d24;
 }
 
 rt .neg {
-  color: #E20808;
+  color: #b33434;
+}
+
+rt .dnc {
+  color: #656565;
 }
 
 rt .value {
   padding: 0px 5px;
 }
 
+table.sortableTable tbody tr.superpower {
+  background-color: #2879af;
+  color: #ffffff;
+}
+
+table.sortableTable tbody tr.power {
+  background-color: #1b8872;
+  color: #ffffff;
+}
+
 table.sortableTable tbody tr.get {
-  background-color: #EBFFEC;
+  background-color: #1a8a20;
+  color: #ffffff;
 }
 
 table.sortableTable tbody tr.neg {
-  background-color: #FFEBEB;
+  background-color: #8d2929;
+  color: #ffffff;
+}
+
+table.sortableTable tbody tr.zero {
+  background-color: #e97777cc;
+  color: #000000
+}
+
+table.sortableTable tbody tr.ten {
+  background-color: #ca8c63;
+  color: #000000
+}
+
+table.sortableTable tbody tr.twenty {
+  background-color: #cabc63;
+  color: #000000
+}
+
+table.sortableTable tbody tr.thirty {
+  background-color: #58a35c;
+  color: #000000
 }
 
 ruby {
@@ -158,13 +189,15 @@ table.sortableTable th.down:after {
   border-radius: 3px;
 }
 
-table tbody tr.highlighted-row.zero {
+table tbody tr.highlighted-row.dnc {
   background-color: #e3e3e3;
   transition: all 200ms ease-out;
 }
 
-table tbody tr.highlighted-row.neg,
-table tbody tr.highlighted-row.get {
+table tbody tr.highlighted-row.superpower,
+table tbody tr.highlighted-row.power,
+table tbody tr.highlighted-row.get,
+table tbody tr.highlighted-row.neg {
   filter: brightness(90%);
   transition: all 200ms ease-out;
 }
@@ -180,11 +213,12 @@ table tbody tr.highlighted-row.get {
 
 .chart-hover-word {
   background-color: lightgray;
+  border-radius: 2px;
 }
 
 .average-buzz-line {
   border-left: dashed;
-  color: palevioletred;
+  color: #ffb12b;
   position: absolute;
   bottom: 0;
   height: 40px;
@@ -192,4 +226,60 @@ table tbody tr.highlighted-row.get {
 
 rt {
   z-index: 1000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+
+  /* this will ensure table rows that are being hovered will be highlighted */
+  .row-hover:hover {
+    background-color: #303030;
+  }
+
+  table tbody tr.highlighted-row.dnc {
+    background-color: #303030;
+    transition: all 200ms ease-out;
+  }
+
+  .buzzpoint-word {
+    background-color: #5895e0;
+    color: #000000;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+
+  rt {
+    font-size: 0.9rem;
+    font-family: serif;
+  }
+
+  .table th {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f3f3f3;
+    font-weight: bold;
+    text-align: left;
+  }
+
+  table.sortableTable tbody tr.dnc {
+    background-color: #424242;
+  }
+
+  rt .dnc {
+    color: #c4c4c4;
+  }
+
+  table tbody tr.highlighted-row.current {
+    background-color: #303030;
+    transition: all 200ms ease-out;
+  }
+
+  .chart-hover-word {
+    background-color: rgb(87, 87, 87);
+    border-radius: 2px;
+  }
 }
