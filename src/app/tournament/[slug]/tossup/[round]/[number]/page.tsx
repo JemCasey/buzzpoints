@@ -1,9 +1,9 @@
 import Layout from "@/components/Layout";
+import { Metadata } from "next";
 import { getTournamentBySlug, getBuzzesByTossupQuery, getRoundsForTournamentQuery, getTossupForDetailQuery, getTossupSummaryBySite, getTossupsByTournamentQuery, getTournamentsQuery } from "@/utils/queries";
 import { Buzz, Round, Tossup, TossupSummary, Tournament } from "@/types";
-import TossupDisplay from "@/components/TossupDisplay";
-import { Metadata } from "next";
 import { getNavOptions, removeTags, shortenAnswerline } from "@/utils";
+import TossupDisplay from "@/components/TossupDisplay";
 
 export const generateStaticParams = () => {
     const tournaments: Tournament[] = getTournamentsQuery.all() as Tournament[];
@@ -24,37 +24,39 @@ export const generateStaticParams = () => {
     return paths;
 }
 
-export async function generateMetadata({ params }: { params: { slug:string, round:string, number:string }}): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug:string, round:string, number:string }>}): Promise<Metadata> {
+    const params = await props.params;
     const tournament = getTournamentBySlug(params.slug);
     const tossup = getTossupForDetailQuery.get(tournament.id, params.round, params.number) as Tossup;
 
     return {
-        title: `${removeTags(shortenAnswerline(tossup.answer))} - ${tournament.name} - Buzzpoints App`,
+        title: `${removeTags(shortenAnswerline(tossup.answer))} - ${tournament.name} - Buzzpoints`,
         description: `Tossup data for ${tournament!.name}`,
     };
 }
 
-export default function TossupPage({ params }: { params: { slug:string, round:string, number:string }}) {
+export default async function TossupPage(props: { params: Promise<{ slug:string, round:string, number:string }>}) {
+    const params = await props.params;
     const tournament = getTournamentBySlug(params.slug);
     const tossup = getTossupForDetailQuery.get(tournament.id, params.round, params.number) as Tossup;
     const buzzes = getBuzzesByTossupQuery.all(tossup.id, tournament.id) as Buzz[];
     const tournamentRounds = getRoundsForTournamentQuery.all(tournament.id) as Round[];
     const navOptions = getNavOptions(parseInt(params.round), parseInt(params.number), tournamentRounds);
     const tossupSummary = getTossupSummaryBySite.all({
-        tossupId: tossup.id, 
-        questionSetId: tournament.question_set_id, 
-        metadata: tossup.metadata, 
-        answerPrimary: tossup.answer_primary, 
+        tossupId: tossup.id,
+        questionSetId: tournament.question_set_id,
+        metadata: tossup.metadata,
+        answerPrimary: tossup.answer_primary,
         question: tossup.question
     }) as TossupSummary[];
 
     return (
         <div>
             <Layout tournament={tournament}>
-                <TossupDisplay 
-                    tossup={tossup} 
-                    buzzes={buzzes} 
-                    tournament={tournament} 
+                <TossupDisplay
+                    tossup={tossup}
+                    buzzes={buzzes}
+                    tournament={tournament}
                     navOptions={navOptions}
                     tossupSummary={tossupSummary}
                 />

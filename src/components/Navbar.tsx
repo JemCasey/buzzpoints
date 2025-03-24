@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import { QuestionSet, Tournament } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation"
 
 type NavbarProps = {
     tournament?: Tournament;
@@ -15,23 +15,19 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
     const pathname = usePathname();
     let mainButton = <Link className="text-white font-bold" href={"/"}>Buzzpoints</Link>;
     let menuItems: any[] = [];
+    const pageType = tournament ? "tournament" : "set";
+    const entity = (tournament || questionSet) as Tournament | QuestionSet | undefined;
 
-    if (tournament) {
+    if (entity) {
         menuItems.push(...[
-            { label: 'Tossups', url: `/tournament/${tournament.slug}/tossup` },
-            { label: 'Bonuses', url: `/tournament/${tournament.slug}/bonus` },
-            { label: 'Players', url: `/tournament/${tournament.slug}/player` },
-            { label: 'Teams', url: `/tournament/${tournament.slug}/team` },
-            { label: 'Categories (Tossup)', url: `/tournament/${tournament.slug}/category-tossup` },
-            { label: 'Categories (Bonus)', url: `/tournament/${tournament.slug}/category-bonus` },
+            { label: "Tossups", url: `/${pageType}/${entity.slug}/tossup` },
+            { label: "Bonuses", url: `/${pageType}/${entity.slug}/bonus` },
+            { label: "Players", url: `/${pageType}/${entity.slug}/player` },
+            { label: "Teams", url: `/${pageType}/${entity.slug}/team` },
+            { label: "Categories (Tossup)", url: `/${pageType}/${entity.slug}/category-tossup` },
+            { label: "Categories (Bonus)", url: `/${pageType}/${entity.slug}/category-bonus` }
         ]);
-        mainButton = <Link className="text-white font-bold" href={`/tournament/${tournament.slug}`}>{tournament.name}</Link>
-    } else if (questionSet) {
-        menuItems.push(...[
-            { label: 'Tossups', url: `/set/${questionSet.slug}/tossup` },
-            { label: 'Bonuses', url: `/set/${questionSet.slug}/bonus` },
-        ]);
-        mainButton = <Link className="text-white font-bold" href={`/set/${questionSet.slug}`}>{questionSet.name}</Link>
+        mainButton = <Link className="text-white font-bold" href={`/${pageType}/${entity.slug}`}>{entity.name}</Link>
     }
 
     return <nav className="bg-gray-500 sticky">
@@ -46,7 +42,7 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
                             {menuItems.map(({ url, label }, i) => (
                                 <Link
                                     key={i}
-                                    className={`text-gray-300 hover:text-white px-2 py-2 rounded-md text-sm font-medium${pathname.includes(url) ? ' text-white' : ''}`}
+                                    className={`text-gray-300 hover:text-white px-2 py-2 rounded-md text-sm font-medium${pathname.includes(url) ? " text-white" : ""}`}
                                     href={url}
                                 >
                                     {label}
