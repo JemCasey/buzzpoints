@@ -3,7 +3,7 @@ Buzzpoints is a tool that allows one to create and visualize advanced stats for 
 
 To use this project to create advanced stat visualizations for your own tournament, do the following: 
 1. Run your quizbowl tournament, using MODAQ to collect qbj files for each game
-2. Use the [buzzpoint migrator] to extract the buzzpoints into a database. This file will have the name `database.db` and live in the root folder of the directory.
+2. Use the [buzzpoint migrator](https://github.com/JemCasey/buzzpoint-migrator/tree/main) to extract the buzzpoints into a database. This file will have the name `database.db` and live in the root folder of the directory.
 3. Clone this repository locally, and copy the generated database into the `data/` folder.
 
 After these steps the stats should be able to be visualized locally. If you want the buzzpoints to be public, they can be deployed as a website using Vercel. Please see below for more instructions about both of these.
