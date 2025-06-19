@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { BonusCategory } from "@/types";
 import Table from "./Table";
@@ -7,39 +7,46 @@ import { formatDecimal, formatPercent } from "@/utils";
 type BonusCategoryTableProps = {
     bonusCategoryStats: BonusCategory[];
     categoryLinks?: boolean;
+    mode?: "set" | "tournament";
+    slug?: string;
 }
 
-export default function BonusCategoryTable({ bonusCategoryStats, categoryLinks = true }: BonusCategoryTableProps) {
+export default function BonusCategoryTable({ bonusCategoryStats, categoryLinks = true, mode, slug }: BonusCategoryTableProps) {
     const columns = [
         {
             key: "category",
             label: "Category",
-            linkTemplate: categoryLinks ? "/tournament/{{tournament_slug}}/category-bonus/{{category_slug}}" : undefined,
+            linkTemplate: categoryLinks ? `/${mode}/${slug}/category-bonus/{{category_slug}}` : undefined,
             html: true
         },
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            defaultDescending: true
         },
         {
             key: "ppb",
             label: "PPB",
-            format: formatDecimal
+            format: formatDecimal,
+            defaultDescending: true
         },
         {
             key: "easy_conversion",
             label: "Easy %",
-            format: formatPercent
+            format: formatPercent,
+            defaultDescending: true
         },
         {
             key: "medium_conversion",
             label: "Medium %",
-            format: formatPercent
+            format: formatPercent,
+            defaultDescending: true
         },
         {
             key: "hard_conversion",
             label: "Hard %",
-            format: formatPercent
+            format: formatPercent,
+            defaultDescending: true
         }
     ];
 

@@ -1,23 +1,29 @@
-'use client';
+"use client";
 
 import Table from "./Table";
 import { formatDecimal } from "@/utils";
 
 type PlayerCategoryTableProps = {
-    categories: any[]
+    categories: any[];
+    format?: "superpowers" | "powers" | "acf";
 }
 
-export default function PlayerCategoryTable({ categories }: PlayerCategoryTableProps) {
+export default function PlayerCategoryTable({ categories, format }: PlayerCategoryTableProps) {
     const columns = [
         {
             key: "category",
             label: "Category"
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpowers",
+            label: "Superpowers",
+            defaultDescending: true
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "powers",
             label: "Powers",
             defaultDescending: true
-        },
+        }] : []),
         {
             key: "gets",
             label: "Gets",
@@ -55,6 +61,12 @@ export default function PlayerCategoryTable({ categories }: PlayerCategoryTableP
         {
             key: "top_three_buzzes",
             label: "Top 3 Buzzes",
+            defaultDescending: true
+        },
+        {
+            key: "percent_points",
+            label: "% of Points",
+            format: formatDecimal,
             defaultDescending: true
         }
     ];

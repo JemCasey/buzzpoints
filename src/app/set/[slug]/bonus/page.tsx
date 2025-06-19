@@ -1,8 +1,8 @@
 import Layout from "@/components/Layout";
+import { Metadata } from "next";
 import { getBonusesByQuestionSetQuery, getQuestionSetsQuery, getQuestionSetBySlugQuery, } from "@/utils/queries";
 import { Bonus, QuestionSet } from "@/types";
-import { Metadata } from "next";
-import { TournamentBonusTable } from "@/components/common/TournamentBonusTable";
+import { BonusTable } from "@/components/common/BonusTable";
 
 export const generateStaticParams = () => {
     const questionSets: QuestionSet[] = getQuestionSetsQuery.all() as QuestionSet[];
@@ -10,21 +10,24 @@ export const generateStaticParams = () => {
     return questionSets.map(({ slug }) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const params = await props.params;
     const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
 
     return {
-        title: `${questionSet.name} Bonuses - Buzzpoints App`,
+        title: `${questionSet.name} Bonuses - Buzzpoints`,
         description: `Bonus data for ${questionSet!.name}`,
     };
 }
-export default function BonusesPage({ params }: { params: { slug: string } }) {
+
+export default async function BonusesPage(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
     const questionSet = getQuestionSetBySlugQuery.get(params.slug) as QuestionSet;
     const bonuses = getBonusesByQuestionSetQuery.all(questionSet!.id) as Bonus[];
 
     return (
         <Layout questionSet={questionSet}>
-            <TournamentBonusTable bonuses={bonuses} />
+            <BonusTable bonuses={bonuses} mode="full" />
         </Layout>
     );
 }

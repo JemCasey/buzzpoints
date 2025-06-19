@@ -1,25 +1,33 @@
-'use client';
+"use client";
 
 import Table from "../Table";
 import { formatDecimal } from "@/utils";
 
 type TeamTableProps = {
-    teams: any[]
+    teams: any[];
+    mode?: "set" | "tournament";
+    slug?: string;
+    format?: "superpowers" | "powers" | "acf";
 }
 
-export function TeamTable({ teams }: TeamTableProps) {
+export function TeamTable({ teams, mode, slug, format }: TeamTableProps) {
     const columns = [
         {
             key: "name",
             label: "Team",
-            linkTemplate: "/tournament/{{tournament_slug}}/team/{{slug}}",
+            linkTemplate: `/${mode}/${slug}/team/{{slug}}`,
             html: true
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpowers",
+            label: "Superpowers",
+            defaultDescending: true
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "powers",
             label: "Powers",
             defaultDescending: true
-        },
+        }] : []),
         {
             key: "gets",
             label: "Gets",

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import TableHead from "./TableHead";
 import { useSortableTable } from "@/hooks/useSortableTable";
@@ -44,14 +44,14 @@ export default function Table({ data, columns, noSort, noHover, compact, rowProp
     let cellValue = item[column.key];
 
     if (column.render)
-      return column.render(item);  
+      return column.render(item);
 
     if (column.format)
       cellValue = column.format(cellValue);
 
     if (column.html)
       cellValue = <span dangerouslySetInnerHTML={{ __html: cellValue }}></span>;
-    
+
     if (column.linkTemplate)
       return <Link href={_.template(column.linkTemplate, item)} className="underline">{cellValue}</Link>;
 
@@ -64,13 +64,13 @@ export default function Table({ data, columns, noSort, noHover, compact, rowProp
         <TableHead {...{ columns, noSort, handleSorting, compact }} />
         <tbody>
           {tableData.map((item, i) => (
-            <tr 
-              key={item.id || i} 
-              className={`${item.rowClass || ''} ${noHover ? "" : "row-hover"}`} 
+            <tr
+              key={item.id || i}
+              className={`${item.rowClass || ''} ${noHover ? "" : "row-hover"}`}
               {...(rowProperties ? rowProperties(item) : {})}
             >
               {columns.map(column => (
-                <td 
+                <td
                   key={column.key}
                   className={`border-b border-gray-200${compact ? " compact" : ""}`}
                 >

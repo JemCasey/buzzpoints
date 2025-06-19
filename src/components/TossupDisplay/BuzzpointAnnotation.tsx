@@ -1,4 +1,4 @@
-import * as _ from 'radash';
+import * as _ from "radash";
 
 type BuzzpointAnnotationProps = {
     children: React.ReactNode,
@@ -29,9 +29,23 @@ export default function BuzzpointAnnotation({ children, buzzes }:BuzzpointAnnota
             <rp>{"("}</rp>
             <rt>
                 {buzzCounts.map(({ value, count }, i) =>
-                    <span key={i} className={`value ${value > 0 ? 'get' : ''} ${value < 0 ? 'neg' : ''}`}>
-                        <span>{value}</span>
-                        <span style={{ marginLeft: '3px' }}>{`[${count}]`}</span>
+                    <span key={i} className={`value ${
+                        (value == 20 ?
+                            "superpower" :
+                            (value == 15 ?
+                                "power" :
+                                (value > 0 ?
+                                    "get" :
+                                    (value < 0 ?
+                                        "neg" :
+                                        "dnc")
+                                )
+                            )
+                        )
+                    }`
+                    }>
+                    <span>{value}</span>
+                    <span style={{ marginLeft: "3px" }}>{`[${count}]`}</span>
                     </span>)
                 }
             </rt>

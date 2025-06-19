@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { QuestionSet } from "@/types";
 import Table from "./Table";
@@ -7,15 +7,16 @@ import { formatDecimal, formatPercent } from "@/utils";
 type QuestionSetSummaryProps = {
     questionSets: QuestionSet[];
     detailPage?: boolean;
+    format?: "superpowers" | "powers" | "acf";
 }
 
-export default function QuestionSetSummary({ questionSets, detailPage }: QuestionSetSummaryProps) {
+export default function QuestionSetSummary({ questionSets, detailPage, format }: QuestionSetSummaryProps) {
     const columns = [
-        {
+        ...(detailPage ? [] : [{
             key: "name",
-            label: "Question Set",
-            linkTemplate: detailPage ? undefined : "/set/{{slug}}"
-        },
+            label: "Question",
+            linkTemplate: "/set/{{slug}}"
+        }]),
         {
             key: "difficulty",
             label: "Difficulty"
@@ -38,11 +39,16 @@ export default function QuestionSetSummary({ questionSets, detailPage }: Questio
             label: "Conv. %",
             format: formatPercent
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpower_rate",
+            label: "Superpower %",
+            format: formatPercent,
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "power_rate",
             label: "Power %",
-            format: formatPercent
-        },
+            format: formatPercent,
+        }] : []),
         {
             key: "neg_rate",
             label: "Neg %",
