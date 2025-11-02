@@ -35,7 +35,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
 export default async function PlayerPage(props: { params: Promise<{ slug: string, player_slug: string }> }) {
     const params = await props.params;
     const questionSet = getQuestionSetBySlug(params.slug);
-    const buzzes = getPlayerBuzzesForQuestionSet.all(questionSet.id, params.player_slug) as any[];
+    const buzzes = getPlayerBuzzesForQuestionSet.all(questionSet.id, questionSet.id, params.player_slug) as any[];
     const player = (getPlayersByQuestionSetQuery.all(questionSet.id) as Player[]).filter((p) => p.slug === params.player_slug);
 
     return (

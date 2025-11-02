@@ -39,8 +39,8 @@ export function TeamTable({ teams, mode, slug, format }: TeamTableProps) {
             defaultDescending: true
         },
         {
-            key: "bouncebacks",
-            label: "Bouncebacks",
+            key: "rebounds",
+            label: "Rebounds",
             defaultDescending: true
         },
         {

@@ -13,10 +13,15 @@ type NavbarProps = {
 export default function Navbar({ tournament, questionSet }: NavbarProps) {
     const [menuOpen, setMenuOpen] = useState(false);
     const pathname = usePathname();
-    let mainButton = <Link className="text-white font-bold" href={"/"}>Buzzpoints</Link>;
+    let mainButtons: any[] = [];
     let menuItems: any[] = [];
     const pageType = tournament ? "tournament" : "set";
     const entity = (tournament || questionSet) as Tournament | QuestionSet | undefined;
+    const setName = tournament ? tournament.question_set.name : "";
+
+    mainButtons.push(...[
+        { label: entity ? "Home" : "Buzzpoints", url: "/" },
+    ]);
 
     if (entity) {
         menuItems.push(...[
@@ -25,20 +30,42 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
             { label: "Players", url: `/${pageType}/${entity.slug}/player` },
             { label: "Teams", url: `/${pageType}/${entity.slug}/team` },
             { label: "Categories (Tossup)", url: `/${pageType}/${entity.slug}/category-tossup` },
-            { label: "Categories (Bonus)", url: `/${pageType}/${entity.slug}/category-bonus` }
+            { label: "Categories (Bonus)", url: `/${pageType}/${entity.slug}/category-bonus` },
         ]);
-        mainButton = <Link className="text-white font-bold" href={`/${pageType}/${entity.slug}`}>{entity.name}</Link>
+        if (tournament) {
+            mainButtons.push(...[
+                { label: setName, url: `/set/${tournament.question_set.slug}` },
+            ]);
+        }
+        mainButtons.push(...[
+            { label: entity.name, url: `/${pageType}/${entity.slug}` },
+        ]);
+    } else {
+        mainButtons.push(...[
+            { label: "Question Sets", url: `/set/` },
+            { label: "Tournaments", url: `/tournament/` },
+        ]);
     }
 
     return <nav className="bg-gray-500 sticky">
         <div className="min-w-screen mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
                 <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                        {mainButton}
+                    <div className="flex-shrink-0 mr-5">
+                        <div>
+                            {mainButtons.map(({ url, label }, i) => (
+                                <Link
+                                    key={i}
+                                    className="text-white font-bold px-4 py-2"
+                                    href={url}
+                                >
+                                    {label}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                     <div className="hidden md:block">
-                        <div className="ml-10 flex items-baseline space-x-4">
+                        <div className="flex items-baseline space-x-4">
                             {menuItems.map(({ url, label }, i) => (
                                 <Link
                                     key={i}

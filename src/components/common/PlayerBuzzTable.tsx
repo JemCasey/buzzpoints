@@ -40,6 +40,42 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
         {
             key: "value",
             label: "Value",
+        },
+        {
+            key: "first_buzz",
+            label: "First",
+            render: (b: any) => (
+                <>
+                    {b.first_buzz > 0 ? "✓" : "✕"}
+                </>
+            )
+        },
+        {
+            key: "top_three_buzz",
+            label: "Top 3",
+            render: (b: any) => (
+                <>
+                    {b.top_three_buzz > 0 ? "✓" : "✕"}
+                </>
+            )
+        },
+        {
+            key: "buzz_rank",
+            label: "Rank",
+            render: (b: any) => (
+                <>
+                    {b.buzz_rank > 0 ? b.buzz_rank : ""}
+                </>
+            )
+        },
+        {
+            key: "rebound",
+            label: "Rebound",
+            render: (b: any) => (
+                <>
+                    {b.rebound > 0 ? "✓" : "✕"}
+                </>
+            )
         }
     ];
 

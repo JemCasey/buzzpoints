@@ -45,8 +45,8 @@ export function PlayerTable({ players, mode, slug, format }: PlayerTableProps) {
             defaultDescending: true
         },
         {
-            key: "bouncebacks",
-            label: "Bouncebacks",
+            key: "rebounds",
+            label: "Rebounds",
             defaultDescending: true
         },
         {

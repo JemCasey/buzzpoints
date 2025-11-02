@@ -1,12 +1,12 @@
 "use client";
 
-import TossupText from './TossupText';
-import TossupBuzzes from './TossupBuzzes';
-import { useState } from 'react';
-import Link from 'next/link';
-import TossupSummaryDisplay from './TossupSummary';
-import { Buzz, BuzzDictionary, QuestionSet, Tossup, TossupSummary, Tournament } from '@/types';
-import TossupGraph from './TossupGraph';
+import TossupText from "./TossupText";
+import TossupBuzzes from "./TossupBuzzes";
+import { useState } from "react";
+import Link from "next/link";
+import TossupSummaryDisplay from "./TossupSummary";
+import { Buzz, BuzzDictionary, QuestionSet, Tossup, TossupSummary, Tournament } from "@/types";
+import TossupGraph from "./TossupGraph";
 
 type TossupProps = {
     tossup: Tossup;
@@ -33,13 +33,14 @@ export default function TossupDisplay({ tossup, buzzes, tournament, questionSet,
                     {!!navOptions.previous && !!navOptions.next && " - "}
                     {!!navOptions.next && <Link href={`/tournament/${tournament.slug}/tossup/${navOptions.next.round}/${navOptions.next.number}`} className="underline">Next tossup</Link>}
                 </div>}
-                <h3 className="text-xl font-bold my-3">Tossup</h3>
+                <h3 className="text-xl font-bold my-3">{!!tossup.round ? `Round ${tossup.round}: ` : (!!tossup.packet_id ? `Packet ${tossup.packet_id}: ` : "")}Tossup {tossup.question_number}</h3>
                 <TossupText tossup={tossup}
                     buzzes={buzzDictionary}
                     hoverPosition={hoverPosition}
                     averageBuzz={tossup.average_buzz}
                     buzzpoint={buzzpoint}
-                    onBuzzpointChange={(buzzpoint: number) => setBuzzpoint(buzzpoint)} />
+                    onBuzzpointChange={(buzzpoint: number) => setBuzzpoint(buzzpoint)}
+                />
                 <TossupGraph
                     buzzes={buzzDictionary}
                     onHoverPositionChange={(position) => setHoverPosition(position)}

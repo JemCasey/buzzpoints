@@ -35,8 +35,8 @@ export default function PlayerCategoryTable({ categories, format }: PlayerCatego
             defaultDescending: true
         },
         {
-            key: "bouncebacks",
-            label: "Bouncebacks",
+            key: "rebounds",
+            label: "Rebounds",
             defaultDescending: true
         },
         {

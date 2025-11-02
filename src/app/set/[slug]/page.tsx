@@ -42,7 +42,6 @@ export default async function QuestionSetFunc(props: { params: Promise<{ slug: s
                     <p className="mb-2"><Link href={`/set/${questionSet.slug}/tossup`} className="underline">View all tossups</Link></p>
                     <TossupCategoryTable
                         tossupCategoryStats={tossupCategoryStats}
-                        categoryLinks={false}
                         mode="set"
                         slug={params.slug}
                         format="powers"
@@ -53,7 +52,6 @@ export default async function QuestionSetFunc(props: { params: Promise<{ slug: s
                     <p className="mb-2"><Link href={`/set/${questionSet.slug}/bonus`} className="underline">View all bonuses</Link></p>
                     <BonusCategoryTable
                         bonusCategoryStats={bonusCategoryStats}
-                        categoryLinks={false}
                         mode="set"
                         slug={params.slug}
                     />

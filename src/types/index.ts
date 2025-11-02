@@ -25,6 +25,8 @@ export type Question = {
     set_slug: string;
     tournament_slug: string;
     round: number;
+    packet_id: string;
+    packet_name: string;
     question_number: number;
     metadata: string;
     author: string;
@@ -140,6 +142,7 @@ export type Word = {
 
 export type Round = {
     number: number;
+    packet_id: number;
 }
 
 export type Player = {

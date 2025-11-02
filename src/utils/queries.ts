@@ -32,8 +32,11 @@ export const getRoundsForTournamentQuery = db.prepare(`
     ORDER BY number
 `);
 
-export const getTossupForDetailQuery = db.prepare(`
+export const getTossupForTournamentDetailQuery = db.prepare(`
     SELECT  tossup.id,
+            round.number as round,
+            packet.id as packet_id,
+            packet.name as packet_name,
             packet_question.question_number,
             tossup.question,
             tossup.answer,
@@ -78,6 +81,9 @@ export const getTossupForDetailQuery = db.prepare(`
 
 export const getTossupForSetDetailQuery = db.prepare(`
     SELECT  tossup.id,
+            packet.id as packet_id,
+            packet.name as packet_name,
+            packet_question.question_number,
             tossup.question,
             tossup.answer,
             tossup.answer_primary,
@@ -107,6 +113,10 @@ export const getTossupForSetDetailQuery = db.prepare(`
             ) as average_buzz
     FROM    tossup
     JOIN    question ON tossup.question_id = question.id
+    JOIN    packet_question ON question.id = packet_question.question_id
+    JOIN    packet ON packet_question.packet_id = packet.id
+    JOIN    question_set_edition ON packet.question_set_edition_id = question_set_edition.id
+    JOIN    tournament ON question_set_edition.id = tournament.question_set_edition_id
     WHERE   question.id IN (
         SELECT  question_id
         FROM    packet_question
@@ -347,6 +357,19 @@ export const getTournamentsQuery = db.prepare(`
     ORDER BY start_date desc
 `);
 
+export const getTournamentsbySetQuery = db.prepare(`
+    SELECT  id,
+            name,
+            slug,
+            location,
+            level,
+            start_date,
+            end_date
+    FROM    tournament
+    WHERE   question_set_edition_id = ?
+    ORDER BY name ASC
+`);
+
 export const getTournamentBySlugQuery = db.prepare(`
     SELECT  tournament.id,
             tournament.name,
@@ -539,7 +562,7 @@ export const getPlayerCategoryStatsQuery = db.prepare(`
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
             sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks,
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds,
             sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) * 100.0 / sum(sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0))))) OVER () as percent_points
     FROM	tournament
     JOIN	round ON tournament_id = tournament.id
@@ -560,7 +583,8 @@ export const getPlayerCategoryStatsQuery = db.prepare(`
 export const getPlayerCategoryStatsForQuestionSetQuery = db.prepare(`
     WITH raw_buzzes AS (
         SELECT 	DISTINCT tossup_id,
-                buzz_position
+                buzz_position,
+                value
         FROM 	tossup
         JOIN	game ON game_id = game.id
         JOIN	round ON round_id = round.id
@@ -568,16 +592,15 @@ export const getPlayerCategoryStatsForQuestionSetQuery = db.prepare(`
         JOIN    question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
         JOIN	buzz ON tossup_id = tossup.id
         WHERE	exclude_from_individual = 0
-            AND question_set_edition_id = ?
+            AND question_set_id = ?
             AND value > 0
         ),
         buzz_ranks AS (
             SELECT	tossup_id,
                     buzz_position,
-                    (SELECT COUNT()+1 FROM (
-                        SELECT buzz_position FROM raw_buzzes b2 WHERE b2.buzz_position < b1.buzz_position AND b1.tossup_id = b2.tossup_id
-                    )) as row_num
-            FROM	raw_buzzes b1
+                    value,
+                    DENSE_RANK() OVER (PARTITION BY tossup_id ORDER BY buzz_position ASC) as buzz_rank
+            FROM	raw_buzzes
         )
     SELECT	buzz.player_id,
             player.name,
@@ -589,20 +612,23 @@ export const getPlayerCategoryStatsForQuestionSetQuery = db.prepare(`
             sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points,
             min(iif(buzz.value > 0, buzz.buzz_position, NULL)) earliest_buzz,
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
-            sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
-            sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks,
+            sum(iif(buzz_rank = 1, 1, 0)) as first_buzzes,
+            sum(iif(buzz_rank <= 3, 1, 0)) as top_three_buzzes,
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds,
             sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) * 100.0 / sum(sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0))))) OVER () as percent_points
-    FROM	tournament
-    JOIN    question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
-    JOIN	round ON tournament_id = tournament.id
-    JOIN	game ON round_id = round.id
-    JOIN	buzz ON buzz.game_id = game.id
-    JOIN	player ON buzz.player_id = player.id
-    JOIN    tossup ON tossup.id = buzz.tossup_id
-    JOIN    question ON tossup.question_id = question.id
-    LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
-    LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
+    FROM	buzz
+    JOIN	game on buzz.game_id = game.id
+    JOIN    question_set_edition on tournament.question_set_edition_id = question_set_edition.id
+    JOIN    question_set on question_set_edition.question_set_id = question_set.id
+    JOIN 	tossup on buzz.tossup_id = tossup.id
+    LEFT JOIN	buzz_ranks ON tossup.id = buzz_ranks.tossup_id AND buzz.buzz_position = buzz_ranks.buzz_position AND buzz.value = buzz_ranks.value
+    JOIN	round on game.round_id = round.id
+    JOIN 	tournament on round.tournament_id = tournament.id
+    JOIN	player on buzz.player_id = player.id
+    JOIN 	question on tossup.question_id = question.id
+    JOIN	packet ON round.packet_id = packet.id
+    JOIN 	packet_question ON packet.id = packet_question.packet_id
+		AND	question.id = packet_question.question_id
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	question_set_id = ?
         AND player.slug = ?
@@ -686,6 +712,8 @@ export const getTeamCategoryStatsByQuestionSetQuery = db.prepare(`
 export const getBonusesByTournamentQuery = db.prepare(`
     SELECT  tournament.slug AS tournament_slug,
             round.number AS round,
+            packet.id as packet_id,
+            packet.name as packet_name,
             question_number,
             category_main AS category,
             category_main_slug AS category_slug,
@@ -741,6 +769,9 @@ export const getBonusesByTournamentQuery = db.prepare(`
 
 export const getBonusesByQuestionSetQuery = db.prepare(`
     SELECT  question_set.slug AS set_slug,
+            packet.id as packet_id,
+            packet.name as packet_name,
+            question_number,
             question.slug,
             (SELECT COUNT(*) FROM packet_question WHERE packet_question.question_id = question.id) AS editions,
             bonus.id AS id,
@@ -933,7 +964,7 @@ export const getPlayerCategoryLeaderboard = db.prepare(`
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
             sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds
     FROM	tournament
     JOIN	round ON team.tournament_id = tournament.id
     JOIN	game ON round_id = round.id
@@ -990,7 +1021,7 @@ export const getPlayerCategoryForQuestionSetLeaderboard = db.prepare(`
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
             sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds
     FROM	tournament
     JOIN    question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
     JOIN    question_set ON question_set_id = question_set.id
@@ -1374,7 +1405,7 @@ export const getPlayerLeaderboard = db.prepare(`
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
             sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds
     FROM	tournament
     JOIN	round ON team.tournament_id = tournament.id
     JOIN	game ON round_id = round.id
@@ -1427,7 +1458,7 @@ export const getPlayerLeaderboardForQuestionSet = db.prepare(`
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
             sum(iif(top_three.tossup_id is not null, 1, 0)) as top_three_buzzes,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds
     FROM	tournament
     JOIN    question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
     JOIN    question_set ON question_set_edition.question_set_id = question_set.id
@@ -1445,6 +1476,27 @@ export const getPlayerLeaderboardForQuestionSet = db.prepare(`
 `)
 
 export const getPlayerBuzzesForQuestionSet = db.prepare(`
+    WITH raw_buzzes AS (
+        SELECT 	DISTINCT tossup_id,
+                buzz_position,
+                value
+        FROM 	tossup
+        JOIN	game ON game_id = game.id
+        JOIN	round ON round_id = round.id
+        JOIN    tournament ON round.tournament_id = tournament.id
+        JOIN    question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
+        JOIN	buzz ON tossup_id = tossup.id
+        WHERE	exclude_from_individual = 0
+            AND question_set_id = ?
+            AND value > 0
+        ),
+        buzz_ranks AS (
+            SELECT	tossup_id,
+                    buzz_position,
+                    value,
+                    DENSE_RANK() OVER (PARTITION BY tossup_id ORDER BY buzz_position ASC) as buzz_rank
+            FROM	raw_buzzes
+        )
     SELECT	question_set.slug as set_slug,
 			tournament.slug as tournament_slug,
 			question.slug as question_slug,
@@ -1456,19 +1508,25 @@ export const getPlayerBuzzesForQuestionSet = db.prepare(`
 			round.number as round,
 			packet_question.question_number,
 			buzz.buzz_position,
-			buzz.value
+			buzz.value,
+			buzz_rank,
+            iif(buzz_rank = 1, 1, 0) as first_buzz,
+            iif(buzz_rank <= 3, 1, 0) as top_three_buzz,
+            iif(neg.tossup_id is not null, 1, 0) rebound
     FROM	buzz
-    JOIN	player on buzz.player_id = player.id
     JOIN	game on buzz.game_id = game.id
-    JOIN	round on game.round_id = round.id
-    JOIN 	tournament on round.tournament_id = tournament.id
     JOIN    question_set_edition on tournament.question_set_edition_id = question_set_edition.id
     JOIN    question_set on question_set_edition.question_set_id = question_set.id
     JOIN 	tossup on buzz.tossup_id = tossup.id
+    LEFT JOIN	buzz_ranks ON tossup.id = buzz_ranks.tossup_id AND buzz.buzz_position = buzz_ranks.buzz_position AND buzz.value = buzz_ranks.value
+    JOIN	round on game.round_id = round.id
+    JOIN 	tournament on round.tournament_id = tournament.id
+    JOIN	player on buzz.player_id = player.id
     JOIN 	question on tossup.question_id = question.id
     JOIN	packet ON round.packet_id = packet.id
     JOIN 	packet_question ON packet.id = packet_question.packet_id
 		AND	question.id = packet_question.question_id
+    LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	question_set_edition.question_set_id = ?
 		AND	player.slug = ?
         AND	exclude_from_individual = 0
@@ -1500,7 +1558,7 @@ export const getTeamLeaderboard = db.prepare(`
             sum(iif(buzz.value = 15, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
             sum(iif(buzz.value < 0, 1, 0)) as negs,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks,
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds,
             min(iif(buzz.value > 0, buzz.buzz_position, NULL)) earliest_buzz,
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
@@ -1516,7 +1574,7 @@ export const getTeamLeaderboard = db.prepare(`
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	tournament.id = ?
-    AND	exclude_from_individual = 0
+        AND	exclude_from_individual = 0
     group by team.name, tournament.slug, team.slug
 `)
 
@@ -1549,7 +1607,7 @@ export const getTeamLeaderboardForQuestionSet = db.prepare(`
             sum(iif(buzz.value = 15, 1, 0)) as powers,
             sum(iif(buzz.value = 10, 1, 0)) as gets,
             sum(iif(buzz.value < 0, 1, 0)) as negs,
-            sum(iif(neg.tossup_id is not null, 1, 0)) bouncebacks,
+            sum(iif(neg.tossup_id is not null, 1, 0)) rebounds,
             min(iif(buzz.value > 0, buzz.buzz_position, NULL)) earliest_buzz,
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(first.tossup_id is not null, 1, 0)) as first_buzzes,
@@ -1567,7 +1625,7 @@ export const getTeamLeaderboardForQuestionSet = db.prepare(`
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
     WHERE	question_set_id = ?
-    AND	exclude_from_individual = 0
+        AND	exclude_from_individual = 0
     group by team.name, tournament.slug, question_set.slug, team.slug
 `)
 
