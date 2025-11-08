@@ -20,7 +20,15 @@ export default function BonusSummaryFunc({ tournament, bonusSummary }: BonusSumm
             defaultSort: "asc" as const,
             linkTemplate: "/set/{{set_slug}}/bonus/{{question_slug}}"
         },
-        { key: "exact_match", label: "Exact Match?" },
+        {
+            key: "exact_match",
+            label: "Match",
+            render: (b: any) => (
+                <>
+                    {b.exact_match == "Y" ? "✓" : "✕"}
+                </>
+            )
+        },
         { key: "heard", label: "Heard" },
         { key: "ppb", label: "PPB", format: formatDecimal },
         { key: "easy_conversion", label: "Easy %", format: formatPercent },

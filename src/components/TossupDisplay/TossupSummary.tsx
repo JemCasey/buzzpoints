@@ -21,6 +21,15 @@ export default function TossupSummaryFunc({ tossupSummary, tournament, format }:
             defaultSort: "asc" as const,
             linkTemplate: "/set/{{set_slug}}/tossup/{{question_slug}}"
         },
+        {
+            key: "exact_match",
+            label: "Match",
+            render: (t: any) => (
+                <>
+                    {t.exact_match == "Y" ? "✓" : "✕"}
+                </>
+            )
+        },
         { key: "heard", label: "Heard" },
         { key: "conversion_rate", label: "Conv. %", format: formatPercent },
         ...(format === "superpowers" ? [{
