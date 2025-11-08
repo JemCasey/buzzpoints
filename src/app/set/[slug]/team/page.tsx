@@ -30,8 +30,7 @@ export default async function TeamPage(props: { params: Promise<{ slug: string }
             teams={teams}
             mode="set"
             slug={params.slug}
-            format="powers"
+            format={questionSet.format}
         />
-        {/** TODO: don't hardcode format */}
     </Layout>
 }

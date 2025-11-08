@@ -26,6 +26,9 @@ export default async function TossupPage(props: { params: Promise<{ slug: string
     const tossups = getTossupsByTournamentQuery.all(tournament!.id) as Tossup[];
 
     return <Layout tournament={tournament}>
-        <TournamentTossupTable tossups={tossups} format="powers" />
+        <TournamentTossupTable
+            tossups={tossups}
+            format={tournament.question_set.format}
+        />
     </Layout>
 }

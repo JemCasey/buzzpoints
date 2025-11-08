@@ -4,8 +4,13 @@ import { getTournamentBySlug, getBonusesByTournamentQuery, getTournamentsQuery }
 import { Bonus, Tournament } from "@/types";
 import { TournamentBonusTable } from "@/components/common/TournamentBonusTable";
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-    const tournaments = getTournamentsQuery.all() as Tournament[];
+    const tournaments: Tournament[] = (getTournamentsQuery.all() as Tournament[]).filter(t => {
+        const bonuses = getBonusesByTournamentQuery.all(t!.id) as Bonus[];
+        return (bonuses.length > 0);
+    });
 
     return tournaments.map(({ slug }) => ({ slug }));
 }

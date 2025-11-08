@@ -1,20 +1,23 @@
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getTournamentBySlug, getCategoriesForTournamentQuery, getTeamCategoryLeaderboard, getTournamentsQuery } from "@/utils/queries";
-import { BonusCategory, Tournament } from "@/types";
+import { getTournamentBySlug, getCategoriesForTournamentQuery, getTeamCategoryLeaderboard, getTournamentsQuery, getBonusesByTournamentQuery } from "@/utils/queries";
+import { Bonus, BonusCategory, Tournament } from "@/types";
 import TeamCategoryTable from "@/components/TeamCategoryTable";
 
 export async function generateStaticParams() {
     const tournaments = getTournamentsQuery.all() as Tournament[];
     const paths = [];
     for (const tournament of tournaments) {
-        const categories = getCategoriesForTournamentQuery.all(tournament.id) as any[];
-        for (const { category_slug } of categories) {
-            if (category_slug) {
-                paths.push({
-                    slug: tournament.slug,
-                    category: category_slug
-                });
+        const bonuses: Bonus[] = getBonusesByTournamentQuery.all(tournament!.id) as Bonus[];
+        if (bonuses) {
+            const categories = getCategoriesForTournamentQuery.all(tournament!.id) as any[];
+            for (const { category_slug } of categories) {
+                if (category_slug) {
+                    paths.push({
+                        slug: tournament.slug,
+                        category: category_slug
+                    });
+                }
             }
         }
     }

@@ -1,9 +1,10 @@
 "use client";
 
-import { QuestionSet, Tournament } from "@/types";
+import { Bonus, QuestionSet, Tournament } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation"
+import { getBonusesByQuestionSetQuery, getBonusesByTournamentQuery } from "@/utils/queries";
 
 type NavbarProps = {
     tournament?: Tournament;
@@ -24,14 +25,30 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
     ]);
 
     if (entity) {
+        let bonuses: boolean = true;
+        if (tournament) {
+            bonuses = tournament.question_set.bonuses;
+        } else if (questionSet) {
+            bonuses = questionSet.bonuses;
+        }
         menuItems.push(...[
             { label: "Tossups", url: `/${pageType}/${entity.slug}/tossup` },
-            { label: "Bonuses", url: `/${pageType}/${entity.slug}/bonus` },
+        ]);
+        if (bonuses) {
+            menuItems.push(...[
+                { label: "Bonuses", url: `/${pageType}/${entity.slug}/bonus` },
+            ]);
+        }
+        menuItems.push(...[
             { label: "Players", url: `/${pageType}/${entity.slug}/player` },
             { label: "Teams", url: `/${pageType}/${entity.slug}/team` },
             { label: "Categories (Tossup)", url: `/${pageType}/${entity.slug}/category-tossup` },
-            { label: "Categories (Bonus)", url: `/${pageType}/${entity.slug}/category-bonus` },
         ]);
+        if (bonuses) {
+            menuItems.push(...[
+                { label: "Categories (Bonus)", url: `/${pageType}/${entity.slug}/category-bonus` },
+            ]);
+        }
         if (tournament) {
             mainButtons.push(...[
                 { label: setName, url: `/set/${tournament.question_set.slug}` },

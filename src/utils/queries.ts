@@ -2,7 +2,7 @@ import { QuestionSet, Tournament } from '@/types';
 import Database, { Statement } from 'better-sqlite3';
 import { cache } from 'react';
 
-const db = new Database('data/database.db');
+export const db = new Database('data/database.db');
 
 export const getCategoriesForTournamentQuery = db.prepare(`
     SELECT  DISTINCT category_main_slug AS category_slug
@@ -83,6 +83,7 @@ export const getTossupForSetDetailQuery = db.prepare(`
     SELECT  tossup.id,
             packet.id as packet_id,
             packet.name as packet_name,
+            packet.number as packet_number,
             packet_question.question_number,
             tossup.question,
             tossup.answer,
@@ -346,18 +347,21 @@ export const getTeamsByQuestionSetQuery = db.prepare(`
 `);
 
 export const getTournamentsQuery = db.prepare(`
-    SELECT  id,
-            name,
-            slug,
-            location,
-            level,
-            start_date,
-            end_date
+    SELECT  tournament.id,
+            tournament.name,
+            tournament.slug,
+            question_set.name as question_set_name,
+            tournament.location,
+            tournament.level,
+            tournament.start_date,
+            tournament.end_date
     FROM    tournament
+    JOIN    question_set_edition ON question_set_edition_id = question_set_edition.id
+    JOIN    question_set ON question_set_edition.question_set_id = question_set.id
     ORDER BY start_date desc
 `);
 
-export const getTournamentsbySetQuery = db.prepare(`
+export const getTournamentsBySetQuery = db.prepare(`
     SELECT  id,
             name,
             slug,
@@ -624,13 +628,13 @@ export const getPlayerCategoryStatsForQuestionSetQuery = db.prepare(`
     LEFT JOIN	buzz_ranks ON tossup.id = buzz_ranks.tossup_id AND buzz.buzz_position = buzz_ranks.buzz_position AND buzz.value = buzz_ranks.value
     JOIN	round on game.round_id = round.id
     JOIN 	tournament on round.tournament_id = tournament.id
-    JOIN	player on buzz.player_id = player.id
+    JOIN	player on buzz.player_id = player.id AND question_set.id = player.question_set_id
     JOIN 	question on tossup.question_id = question.id
     JOIN	packet ON round.packet_id = packet.id
     JOIN 	packet_question ON packet.id = packet_question.packet_id
 		AND	question.id = packet_question.question_id
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
-    WHERE	question_set_id = ?
+    WHERE	question_set.id = ?
         AND player.slug = ?
         AND	exclude_from_individual = 0
     group by buzz.player_id, player.name, category_main
@@ -714,6 +718,7 @@ export const getBonusesByTournamentQuery = db.prepare(`
             round.number AS round,
             packet.id as packet_id,
             packet.name as packet_name,
+            packet.number as packet_number,
             question_number,
             category_main AS category,
             category_main_slug AS category_slug,
@@ -771,6 +776,7 @@ export const getBonusesByQuestionSetQuery = db.prepare(`
     SELECT  question_set.slug AS set_slug,
             packet.id as packet_id,
             packet.name as packet_name,
+            packet.number as packet_number,
             question_number,
             question.slug,
             (SELECT COUNT(*) FROM packet_question WHERE packet_question.question_id = question.id) AS editions,
@@ -993,7 +999,7 @@ export const getPlayerCategoryForQuestionSetLeaderboard = db.prepare(`
         JOIN    question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
         JOIN	buzz ON tossup_id = tossup.id
         WHERE	exclude_from_individual = 0
-            AND question_set_id = ?
+            AND question_set_edition.question_set_id = ?
             AND value > 0
         ),
         buzz_ranks AS (
@@ -1024,18 +1030,18 @@ export const getPlayerCategoryForQuestionSetLeaderboard = db.prepare(`
             sum(iif(neg.tossup_id is not null, 1, 0)) rebounds
     FROM	tournament
     JOIN    question_set_edition ON tournament.question_set_edition_id = question_set_edition.id
-    JOIN    question_set ON question_set_id = question_set.id
+    JOIN    question_set ON question_set_edition.question_set_id = question_set.id
     JOIN	round ON team.tournament_id = tournament.id
     JOIN	game ON round_id = round.id
     JOIN	buzz ON buzz.game_id = game.id
-    JOIN	player ON buzz.player_id = player.id
+    JOIN	player ON buzz.player_id = player.id AND question_set.id = player.question_set_id
     JOIN    tossup ON tossup.id = buzz.tossup_id
     JOIN    question ON tossup.question_id = question.id
     JOIN	team ON player.team_id = team.id
     LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
-    WHERE	question_set_edition.question_set_id = ?
+    WHERE	question_set.id = ?
             AND question.category_main_slug = ?
             AND	exclude_from_individual = 0
     group by buzz.player_id, player.name, player.slug, tournament.slug, question.category_main
@@ -1117,6 +1123,8 @@ export const getQuestionSetsQuery = db.prepare(`
             question_set.name,
             question_set.slug,
             question_set.difficulty,
+            question_set.format,
+            question_set.bonuses,
             COUNT(DISTINCT question_set_edition.id) edition_count,
             MIN(tournament.start_date) first_mirror,
             COUNT(DISTINCT tournament.id) tournament_count,
@@ -1234,7 +1242,9 @@ export const getQuestionSetBySlugQuery = db.prepare(`
     SELECT  question_set.id,
             question_set.name,
             question_set.slug,
-            question_set.difficulty
+            question_set.difficulty,
+            question_set.format,
+            question_set.bonuses
     FROM    question_set
     WHERE   question_set.slug = ?
 `);
@@ -1244,6 +1254,8 @@ export const getQuestionSetDetailedBySlugQuery = db.prepare(`
             question_set.name,
             question_set.slug,
             question_set.difficulty,
+            question_set.format,
+            question_set.bonuses,
             COUNT(DISTINCT question_set_edition.id) edition_count,
             MIN(tournament.start_date) first_mirror,
             COUNT(DISTINCT tournament.id) tournament_count,
@@ -1364,6 +1376,8 @@ export const getQuestionSetQuery = db.prepare(`
             question_set.name,
             question_set.slug,
             question_set.difficulty,
+            question_set.format,
+            question_set.bonuses,
             question_set_edition.name as edition
     FROM    question_set
     JOIN    question_set_edition ON question_set_id = question_set.id
@@ -1589,7 +1603,7 @@ export const getTeamLeaderboardForQuestionSet = db.prepare(`
         JOIN    question_set_edition ON question_set_edition_id = question_set_edition.id
         JOIN	buzz ON tossup_id = tossup.id
         WHERE	exclude_from_individual = 0
-            AND question_set_id = ?
+            AND question_set_edition.question_set_id = ?
             AND value > 0
         ), buzz_ranks AS (
             SELECT	tossup_id,
@@ -1615,16 +1629,16 @@ export const getTeamLeaderboardForQuestionSet = db.prepare(`
             sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points
     FROM	tournament
     JOIN    question_set_edition ON question_set_edition_id = question_set_edition.id
-    JOIN    question_set ON question_set_id = question_set.id
+    JOIN    question_set ON question_set_edition.question_set_id = question_set.id
     JOIN	round ON round.tournament_id = tournament.id
     JOIN	game ON round_id = round.id
     JOIN	buzz ON buzz.game_id = game.id
-    JOIN    player ON player.id = buzz.player_id
+    JOIN    player ON player.id = buzz.player_id AND question_set.id = player.question_set_id
     JOIN	team ON team.id = player.team_id
     LEFT JOIN	buzz_ranks first ON buzz.tossup_id = first.tossup_id AND buzz.buzz_position = first.buzz_position AND first.row_num = 1 AND buzz.value > 0
     LEFT JOIN   buzz_ranks top_three ON buzz.tossup_id = top_three.tossup_id AND buzz.buzz_position = top_three.buzz_position AND top_three.row_num <= 3 AND buzz.value > 0
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
-    WHERE	question_set_id = ?
+    WHERE	question_set_edition.question_set_id = ?
         AND	exclude_from_individual = 0
     group by team.name, tournament.slug, question_set.slug, team.slug
 `)

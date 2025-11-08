@@ -4,8 +4,13 @@ import { getBonusesByQuestionSetQuery, getQuestionSetsQuery, getQuestionSetBySlu
 import { Bonus, QuestionSet } from "@/types";
 import { BonusTable } from "@/components/common/BonusTable";
 
-export const generateStaticParams = () => {
-    const questionSets: QuestionSet[] = getQuestionSetsQuery.all() as QuestionSet[];
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+    const questionSets: QuestionSet[] = (getQuestionSetsQuery.all() as QuestionSet[]).filter(s => {
+        const bonuses = getBonusesByQuestionSetQuery.all(s!.id) as Bonus[];
+        return (bonuses.length > 0);
+    }) as QuestionSet[];
 
     return questionSets.map(({ slug }) => ({ slug }));
 }

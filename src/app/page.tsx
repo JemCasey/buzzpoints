@@ -13,7 +13,7 @@ export default function Home() {
       </div>
       <br></br>
       <div>
-        To create your own buzzpoints site from QBJ data, read the directions in the <Link href="https://github.com/JemCasey/buzzpoints-migrator" className="underline">buzzpoints-migrator</Link> and <Link href="https://github.com/ani-per/buzzpoints" className="underline">buzzpoints</Link> GitHub repositories.
+        To create your own buzzpoints site from QBJ data, read the directions in the <Link href="https://github.com/JemCasey/buzzpoint-migrator" className="underline">buzzpoint-migrator</Link> and <Link href="https://github.com/ani-per/buzzpoints" className="underline">buzzpoints</Link> GitHub repositories.
       </div>
     </Layout>
   );

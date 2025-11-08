@@ -41,9 +41,9 @@ export default async function TeamPage(props: { params: Promise<{ slug: string, 
     const playerLinks = players.map((x, i, array) =>
         i === array.length - 1
         ?
-        <><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link></>
+        <span key={i}><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link></span>
         :
-        <><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link> | </>
+        <span key={i}><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link> | </span>
     );
 
     return (
@@ -53,7 +53,9 @@ export default async function TeamPage(props: { params: Promise<{ slug: string, 
                 <br></br>
                 {playerLinks}
             </h3>
-            <BonusCategoryTable bonusCategoryStats={bonusTeamCategoryStats} mode="tournament" slug={params.slug} />
+            {!!tournament.question_set.bonuses &&
+                <BonusCategoryTable bonusCategoryStats={bonusTeamCategoryStats} mode="tournament" slug={params.slug} />
+            }
         </Layout>
     );
 }

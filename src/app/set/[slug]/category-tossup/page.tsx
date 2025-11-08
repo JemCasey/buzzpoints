@@ -30,7 +30,7 @@ export default async function CategoryTossupPage(props: { params: Promise<{ slug
             tossupCategoryStats={tossupCategoryStats}
             mode="set"
             slug={params.slug}
-            format="powers"
+            format={questionSet.format}
         />
     </Layout>
 }

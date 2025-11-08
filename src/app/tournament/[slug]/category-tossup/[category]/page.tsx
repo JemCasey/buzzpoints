@@ -43,8 +43,7 @@ export default async function CategoryTossupPage(props: { params: Promise<{ slug
             players={players}
             mode="tournament"
             slug={params.slug}
-            format="powers"
+            format={tournament.question_set.format}
         />
-        {/** TODO: don't hardcode format */}
     </Layout>
 }

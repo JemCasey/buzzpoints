@@ -33,7 +33,7 @@ export default function TossupDisplay({ tossup, buzzes, tournament, questionSet,
                     {!!navOptions.previous && !!navOptions.next && " - "}
                     {!!navOptions.next && <Link href={`/tournament/${tournament.slug}/tossup/${navOptions.next.round}/${navOptions.next.number}`} className="underline">Next tossup</Link>}
                 </div>}
-                <h3 className="text-xl font-bold my-3">{!!tossup.round ? `Round ${tossup.round}: ` : (!!tossup.packet_id ? `Packet ${tossup.packet_id}: ` : "")}Tossup {tossup.question_number}</h3>
+                <h3 className="text-xl font-bold my-3">{!!tossup.round ? `Round ${tossup.round}: ` : (!!tossup.packet_number ? `Packet ${tossup.packet_number}: ` : "")}Tossup {tossup.question_number}</h3>
                 <TossupText tossup={tossup}
                     buzzes={buzzDictionary}
                     hoverPosition={hoverPosition}
@@ -71,7 +71,7 @@ export default function TossupDisplay({ tossup, buzzes, tournament, questionSet,
                     <TossupSummaryDisplay
                         tossupSummary={tossupSummary}
                         tournament={tournament}
-                        format="powers"
+                        format={tournament ? tournament!.question_set!.format : questionSet!.format}
                     />
                 </div>
             </div>

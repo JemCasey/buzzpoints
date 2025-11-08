@@ -1,4 +1,4 @@
-import { removeTags, sanitize } from "@/utils";
+import { removeBadPunc, removeTags, sanitize } from "@/utils";
 import TossupWord from "./TossupWord";
 import { BuzzDictionary, Tossup, Word } from "@/types";
 
@@ -106,8 +106,8 @@ export default function TossupText({ tossup: { question, answer, metadata, packe
         </p>
         <div>ANSWER: <span dangerouslySetInnerHTML={{ __html: answer }}></span></div>
         <div>
-            {metadata && <span>{"<" + metadata + ">"}</span>}
-            {packet_name && <span>&nbsp;|&nbsp;{packet_name}</span>}
+            {metadata && <span>{"<" + removeBadPunc(metadata) + ">"}</span>}
+            {packet_name && <span>&nbsp;|&nbsp;{removeBadPunc(packet_name)}</span>}
         </div>
         <div className="text-xs relative mt-2 mb-2">
             <span className="average-buzz-line" style={{height: "100%"}}></span>

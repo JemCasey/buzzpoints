@@ -1,11 +1,16 @@
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getTournamentBySlug, getBonusCategoryStatsQuery, getTournamentsQuery } from "@/utils/queries";
-import { BonusCategory, Tournament } from "@/types";
+import { getTournamentBySlug, getBonusCategoryStatsQuery, getTournamentsQuery, getBonusesByTournamentQuery } from "@/utils/queries";
+import { Bonus, BonusCategory, Tournament } from "@/types";
 import BonusCategoryTable from "@/components/BonusCategoryTable";
 
-export const generateStaticParams = () => {
-    const tournaments: Tournament[] = getTournamentsQuery.all() as Tournament[];
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+    const tournaments: Tournament[] = (getTournamentsQuery.all() as Tournament[]).filter(t => {
+        const bonuses = getBonusesByTournamentQuery.all(t!.id) as Bonus[];
+        return (bonuses.length > 0);
+    });
 
     return tournaments.map(({ slug }) => ({ slug }));
 }

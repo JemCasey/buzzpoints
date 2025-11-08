@@ -11,13 +11,14 @@ export const generateStaticParams = () => {
 
     for (let { id, slug } of tournaments) {
         const bonuses = getBonusesByTournamentQuery.all(id) as Bonus[];
-
-        for (let { round, question_number } of bonuses) {
-            paths.push({
-                slug,
-                round: String(round),
-                number: String(question_number)
-            });
+        if (bonuses.length > 0) {
+            for (let { round, question_number } of bonuses) {
+                paths.push({
+                    slug,
+                    round: String(round),
+                    number: String(question_number)
+                });
+            }
         }
     }
 

@@ -6,7 +6,7 @@ import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
 
 type TournamentTossupTableProps = {
     tossups: Tossup[];
-    format?: "superpowers" | "powers" | "acf";
+    format?: string;
 }
 
 export function TournamentTossupTable({ tossups, format }: TournamentTossupTableProps) {
@@ -49,11 +49,11 @@ export function TournamentTossupTable({ tossups, format }: TournamentTossupTable
             label: "Power %",
             format: formatPercent,
         }] : []),
-        {
+        ...(format !== "pace" ? [{
             key: "neg_rate",
             label: "Neg %",
             format: formatPercent
-        },
+        }] : []),
         {
             key: "first_buzz",
             label: "First Buzz"

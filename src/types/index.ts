@@ -16,6 +16,8 @@ export type QuestionSet = {
     name: string;
     slug: string;
     difficulty: string;
+    format: string;
+    bonuses: boolean;
     edition: string;
     edition_count: number;
 }
@@ -26,6 +28,7 @@ export type Question = {
     tournament_slug: string;
     round: number;
     packet_id: string;
+    packet_number: string;
     packet_name: string;
     question_number: number;
     metadata: string;

@@ -1,20 +1,25 @@
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getQuestionSetsQuery, getCategoriesForQuestionSetQuery, getQuestionSetBySlug, getTeamCategoryForQuestionSetLeaderboard } from "@/utils/queries";
-import { BonusCategory, QuestionSet, } from "@/types";
+import { getQuestionSetsQuery, getCategoriesForQuestionSetQuery, getQuestionSetBySlug, getTeamCategoryForQuestionSetLeaderboard, getBonusesByQuestionSetQuery } from "@/utils/queries";
+import { Bonus, BonusCategory, QuestionSet, } from "@/types";
 import TeamCategoryTable from "@/components/TeamCategoryTable";
+
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
     const questionSets: QuestionSet[] = getQuestionSetsQuery.all() as QuestionSet[];
     const paths = [];
     for (const questionSet of questionSets) {
-        const categories = getCategoriesForQuestionSetQuery.all(questionSet.id) as any[];
-        for (const { category_slug } of categories) {
-            if (category_slug) {
-                paths.push({
-                    slug: questionSet.slug,
-                    category: category_slug
-                });
+        const bonuses = getBonusesByQuestionSetQuery.all(questionSet!.id) as Bonus[];
+        if (bonuses.length > 0) {
+            const categories = getCategoriesForQuestionSetQuery.all(questionSet.id) as any[];
+            for (const { category_slug } of categories) {
+                if (category_slug) {
+                    paths.push({
+                        slug: questionSet.slug,
+                        category: category_slug
+                    });
+                }
             }
         }
     }

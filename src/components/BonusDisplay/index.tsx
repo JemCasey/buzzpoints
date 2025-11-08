@@ -6,6 +6,7 @@ import BonusText from "./BonusText";
 import BonusSummaryDisplay from "./BonusSummary";
 import { Bonus, BonusDirect, BonusPart, BonusSummary, QuestionSet, Tournament } from "@/types";
 import { BonusTable } from "../common/BonusTable";
+import { removeBadPunc } from "@/utils";
 
 type BonusDisplayProps = {
     bonus: Bonus;
@@ -25,11 +26,11 @@ export default function BonusDisplay({ bonus, parts, directs, tournament, questi
                 {!!navOptions.previous && !!navOptions.next && " - "}
                 {!!navOptions.next && <Link href={`/tournament/${tournament.slug}/bonus/${navOptions.next.round}/${navOptions.next.number}`} className="underline">Next bonus</Link>}
             </div>}
-            <h3 className="text-xl font-bold my-3">{!!bonus.round ? `Round ${bonus.round}: ` : (!!bonus.packet_id ? `Packet ${bonus.packet_id}: ` : "")}Bonus {bonus.question_number}</h3>
+            <h3 className="text-xl font-bold my-3">{!!bonus.round ? `Round ${bonus.round}: ` : (!!bonus.packet_number ? `Packet ${bonus.packet_number}: ` : "")}Bonus {bonus.question_number}</h3>
             <BonusText parts={parts} />
             <div>
-                {!!parts[0]?.metadata && <span>{"<" + parts[0]?.metadata + ">"}</span>}
-                {bonus.packet_name && <span>&nbsp;|&nbsp;{bonus.packet_name}</span>}
+                {!!parts[0]?.metadata && <span>{"<" + removeBadPunc(parts[0]?.metadata) + ">"}</span>}
+                {bonus.packet_name && <span>&nbsp;|&nbsp;{removeBadPunc(bonus.packet_name)}</span>}
             </div>
             <br></br>
             <BonusTable bonuses={[bonus]} mode="summary" />

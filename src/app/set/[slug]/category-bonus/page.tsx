@@ -1,11 +1,16 @@
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getQuestionSetsQuery, getQuestionSetBySlug, getBonusCategoryStatsForQuestionSetQuery } from "@/utils/queries";
-import { BonusCategory, QuestionSet } from "@/types";
+import { getQuestionSetsQuery, getQuestionSetBySlug, getBonusCategoryStatsForQuestionSetQuery, getBonusesByQuestionSetQuery } from "@/utils/queries";
+import { Bonus, BonusCategory, QuestionSet } from "@/types";
 import BonusCategoryTable from "@/components/BonusCategoryTable";
 
-export const generateStaticParams = () => {
-    const questionSets: QuestionSet[] = getQuestionSetsQuery.all() as QuestionSet[];
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+    const questionSets: QuestionSet[] = (getQuestionSetsQuery.all() as QuestionSet[]).filter(s => {
+        const bonuses = getBonusesByQuestionSetQuery.all(s!.id) as Bonus[];
+        return (bonuses.length > 0);
+    }) as QuestionSet[];
 
     return questionSets.map(({ slug }) => ({ slug }));
 }
@@ -15,7 +20,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     let questionSet = getQuestionSetBySlug(params.slug);
 
     return {
-        title: `${questionSet.name} Players - Buzzpoints`,
+        title: `${questionSet.name} Teams - Buzzpoints`,
         description: `Category leaderboard for ${questionSet!.name}`,
     };
 }

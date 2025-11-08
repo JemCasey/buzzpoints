@@ -5,7 +5,7 @@ import { formatDecimal } from "@/utils";
 
 type PlayerCategoryTableProps = {
     categories: any[];
-    format?: "superpowers" | "powers" | "acf";
+    format?: string;
 }
 
 export default function PlayerCategoryTable({ categories, format }: PlayerCategoryTableProps) {
@@ -29,11 +29,11 @@ export default function PlayerCategoryTable({ categories, format }: PlayerCatego
             label: "Gets",
             defaultDescending: true
         },
-        {
+        ...(format !== "pace" ? [{
             key: "negs",
             label: "Negs",
             defaultDescending: true
-        },
+        }] : []),
         {
             key: "rebounds",
             label: "Rebounds",

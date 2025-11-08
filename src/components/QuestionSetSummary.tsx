@@ -7,10 +7,11 @@ import { formatDecimal, formatPercent } from "@/utils";
 type QuestionSetSummaryProps = {
     questionSets: QuestionSet[];
     detailPage?: boolean;
-    format?: "superpowers" | "powers" | "acf";
+    format?: string;
+    bonuses?: boolean;
 }
 
-export default function QuestionSetSummary({ questionSets, detailPage, format }: QuestionSetSummaryProps) {
+export default function QuestionSetSummary({ questionSets, detailPage, format, bonuses }: QuestionSetSummaryProps) {
     const columns = [
         ...(detailPage ? [] : [{
             key: "name",
@@ -39,41 +40,53 @@ export default function QuestionSetSummary({ questionSets, detailPage, format }:
             label: "Conv. %",
             format: formatPercent
         },
-        ...(format === "superpowers" ? [{
-            key: "superpower_rate",
-            label: "Superpower %",
-            format: formatPercent,
-        }] : []),
-        ...(format !== "acf" ? [{
-            key: "power_rate",
-            label: "Power %",
-            format: formatPercent,
-        }] : []),
-        {
+        ...(format === "superpowers" ?
+            [
+                {
+                    key: "superpower_rate",
+                    label: "Superpower %",
+                    format: formatPercent,
+                }
+            ] : []
+        ),
+        ...(format !== "acf" ?
+            [
+                {
+                    key: "power_rate",
+                    label: "Power %",
+                    format: formatPercent,
+                }
+            ] : []
+        ),
+        ...(format !== "pace" ? [{
             key: "neg_rate",
             label: "Neg %",
             format: formatPercent
-        },
-        {
-            key: "ppb",
-            label: "PPB",
-            format: formatDecimal
-        },
-        {
-            key: "easy_conversion",
-            label: "Easy %",
-            format: formatPercent
-        },
-        {
-            key: "medium_conversion",
-            label: "Medium %",
-            format: formatPercent
-        },
-        {
-            key: "hard_conversion",
-            label: "Hard %",
-            format: formatPercent
-        },
+        }] : []),
+        ...(bonuses ?
+            [
+                {
+                    key: "ppb",
+                    label: "PPB",
+                    format: formatDecimal
+                },
+                {
+                    key: "easy_conversion",
+                    label: "Easy %",
+                    format: formatPercent
+                },
+                {
+                    key: "medium_conversion",
+                    label: "Medium %",
+                    format: formatPercent
+                },
+                {
+                    key: "hard_conversion",
+                    label: "Hard %",
+                    format: formatPercent
+                }
+            ] : []
+        )
     ];
 
     return (

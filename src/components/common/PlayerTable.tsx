@@ -7,7 +7,7 @@ type PlayerTableProps = {
     players: any[];
     mode?: "tournament" | "set";
     slug?: string;
-    format?: "superpowers" | "powers" | "acf";
+    format?: string;
 }
 
 export function PlayerTable({ players, mode, slug, format }: PlayerTableProps) {
@@ -39,11 +39,11 @@ export function PlayerTable({ players, mode, slug, format }: PlayerTableProps) {
             label: "Gets",
             defaultDescending: true
         },
-        {
+        ...(format !== "pace" ? [{
             key: "negs",
             label: "Negs",
             defaultDescending: true
-        },
+        }] : []),
         {
             key: "rebounds",
             label: "Rebounds",

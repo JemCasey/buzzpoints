@@ -7,7 +7,7 @@ type TeamTableProps = {
     teams: any[];
     mode?: "set" | "tournament";
     slug?: string;
-    format?: "superpowers" | "powers" | "acf";
+    format?: string;
 }
 
 export function TeamTable({ teams, mode, slug, format }: TeamTableProps) {
@@ -33,11 +33,11 @@ export function TeamTable({ teams, mode, slug, format }: TeamTableProps) {
             label: "Gets",
             defaultDescending: true
         },
-        {
+        ...(format !== "pace" ? [{
             key: "negs",
             label: "Negs",
             defaultDescending: true
-        },
+        }] : []),
         {
             key: "rebounds",
             label: "Rebounds",

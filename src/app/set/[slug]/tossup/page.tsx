@@ -27,7 +27,10 @@ export default async function TossupPage(props: { params: Promise<{ slug: string
 
     return (
         <Layout questionSet={questionSet}>
-            <TossupTable tossups={tossups} format="powers" />
+            <TossupTable
+                tossups={tossups}
+                format={questionSet.format}
+            />
         </Layout>
     );
 }

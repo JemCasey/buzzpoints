@@ -5,18 +5,20 @@ import { Bonus, BonusDirect, BonusPart, BonusSummary, QuestionSet } from "@/type
 import { removeTags, shortenAnswerline } from "@/utils";
 import BonusDisplay from "@/components/BonusDisplay";
 
-export const generateStaticParams = () => {
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
     const questionSets: QuestionSet[] = getQuestionSetsQuery.all() as QuestionSet[];
     const paths = [];
-
     for (let { id, slug } of questionSets) {
         const bonuses: Bonus[] = getBonusesByQuestionSetQuery.all(id) as Bonus[];
-
-        for (let { slug: bonusSlug } of bonuses) {
-            paths.push({
-                slug,
-                bonusSlug
-            });
+        if (bonuses.length > 0) {
+            for (let { slug: bonusSlug } of bonuses) {
+                paths.push({
+                    slug,
+                    bonusSlug
+                });
+            }
         }
     }
 

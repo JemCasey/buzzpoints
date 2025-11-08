@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getTournamentBySlug, getBonusCategoryStatsQuery, getTossupCategoryStatsQuery, getTournamentsQuery } from "@/utils/queries";
+import { getTournamentBySlug, getBonusCategoryStatsQuery, getTossupCategoryStatsQuery, getTournamentsQuery, getQuestionSetQuery, getQuestionSetBySlug } from "@/utils/queries";
 import { TossupCategory, BonusCategory, Tournament } from "@/types";
 import TournamentSummary from "@/components/TournamentSummary";
 import TossupCategoryTable from "@/components/TossupCategoryTable";
@@ -25,7 +25,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
 
 export default async function TournamentFunc(props: { params: Promise<{ slug: string }> }) {
     const params = await props.params;
-    const tournament = getTournamentBySlug(params.slug);
+    const tournament = getTournamentBySlug(params.slug) as Tournament;
     const tossupCategoryStats = getTossupCategoryStatsQuery.all(tournament.id) as TossupCategory[];
     const bonusCategoryStats = getBonusCategoryStatsQuery.all(tournament.id) as BonusCategory[];
 
@@ -39,24 +39,24 @@ export default async function TournamentFunc(props: { params: Promise<{ slug: st
             />
             <div className="flex flex-col md:flex-row md:space-x-10 mt-5">
                 <div className="md:basis-1/2">
-                    <h5 className="text-lg font-bold my-2">Tossups</h5>
-                    <p className="mb-2"><Link href={`/tournament/${tournament.slug}/tossup`} className="underline">View all tossups</Link></p>
+                    <h5 className="text-lg font-bold my-2"><Link href={`/tournament/${tournament.slug}/tossup`} className="underline">Tossups</Link></h5>
                     <TossupCategoryTable
                         tossupCategoryStats={tossupCategoryStats}
                         mode="tournament"
                         slug={params.slug}
-                        format="powers"
+                        format={tournament.question_set.format}
                     />
                 </div>
-                <div className="md:basis-1/2">
-                    <h5 className="text-lg font-bold my-2">Bonuses</h5>
-                    <p className="mb-2"><Link href={`/tournament/${tournament.slug}/bonus`} className="underline">View all bonuses</Link></p>
-                    <BonusCategoryTable
-                        bonusCategoryStats={bonusCategoryStats}
-                        mode="tournament"
-                        slug={params.slug}
-                    />
-                </div>
+                {!!tournament.question_set.bonuses &&
+                    <div className="md:basis-1/2">
+                        <h5 className="text-lg font-bold my-2"><Link href={`/tournament/${tournament.slug}/bonus`} className="underline">Bonuses</Link></h5>
+                        <BonusCategoryTable
+                            bonusCategoryStats={bonusCategoryStats}
+                            mode="tournament"
+                            slug={params.slug}
+                        />
+                    </div>
+                }
             </div>
         </Layout>
     );

@@ -5,7 +5,7 @@ import { formatDecimal, formatPercent } from "@/utils";
 type TossupSummaryProps = {
     tossupSummary: TossupSummary[];
     tournament?: Tournament;
-    format?: "superpowers" | "powers" | "acf";
+    format?: string;
 }
 
 export default function TossupSummaryFunc({ tossupSummary, tournament, format }: TossupSummaryProps) {
@@ -33,7 +33,11 @@ export default function TossupSummaryFunc({ tossupSummary, tournament, format }:
             label: "Power %",
             format: formatPercent,
         }] : []),
-        { key: "neg_rate", label: "Neg %", format: formatPercent },
+        ...(format !== "pace" ? [{
+            key: "neg_rate",
+            label: "Neg %",
+            format: formatPercent
+        }] : []),
         { key: "average_buzz", label: "Average Buzz", format: formatDecimal }
     ];
 

@@ -9,7 +9,7 @@ type TossupCategoryTableProps = {
     categoryLinks?: boolean;
     mode?: "set" | "tournament";
     slug?: string;
-    format?: "superpowers" | "powers" | "acf";
+    format?: string;
 }
 
 export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks = true, mode, slug, format }: TossupCategoryTableProps) {
@@ -39,11 +39,11 @@ export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks
             label: "Power %",
             format: formatPercent,
         }] : []),
-        {
+        ...(format !== "pace" ? [{
             key: "neg_rate",
             label: "Neg %",
             format: formatPercent
-        },
+        }] : []),
         {
             key: "average_buzz",
             label: "Average Buzz",

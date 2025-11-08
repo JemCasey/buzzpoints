@@ -54,7 +54,10 @@ export default async function PlayerPage(props: { params: Promise<{ slug: string
                     View Buzzes
                 </Link>
             </div>
-            <PlayerCategoryTable categories={tossupPlayerCategoryStats} format="powers" /> {/** TODO: don't hardcode format */}
+            <PlayerCategoryTable
+                categories={tossupPlayerCategoryStats}
+                format={questionSet.format}
+            />
         </Layout>
     );
 }
