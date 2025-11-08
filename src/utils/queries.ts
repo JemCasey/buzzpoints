@@ -1703,8 +1703,10 @@ export const getTossupSummaryBySite = db.prepare(`
     JOIN	buzz ON game.id = buzz.game_id AND tossup.id = tossup_id
     WHERE	tossup.id <> @tossupId
         AND question_set_edition.question_set_id = @questionSetId
-        AND (tossup.question = @question
-        OR  (tossup.answer_primary = @answerPrimary AND question.metadata = @metadata))
+        AND (
+            tossup.answer_primary = @answerPrimary
+            AND question.metadata = @metadata
+        )
     GROUP BY tournament.id,
             tournament.name,
             tournament.slug,
