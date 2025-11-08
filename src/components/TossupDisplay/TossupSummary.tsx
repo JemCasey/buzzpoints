@@ -21,7 +21,7 @@ export default function TossupSummaryFunc({ tossupSummary, tournament, format }:
             defaultSort: "asc" as const,
             linkTemplate: "/set/{{set_slug}}/tossup/{{question_slug}}"
         },
-        { key: "tuh", label: "TUH" },
+        { key: "heard", label: "Heard" },
         { key: "conversion_rate", label: "Conv. %", format: formatPercent },
         ...(format === "superpowers" ? [{
             key: "superpower_rate",

@@ -26,6 +26,7 @@ export type Question = {
     id: number;
     set_slug: string;
     tournament_slug: string;
+    question_set_edition_name: string;
     round: number;
     packet_id: string;
     packet_number: string;
@@ -174,7 +175,8 @@ export type TossupSummary = {
     edition: string;
     round_number: number;
     question_number: number;
-    tuh: number;
+    exact_match: string;
+    heard: number;
     conversation_rate: number;
     superpower_rate: number;
     power_rate: number;

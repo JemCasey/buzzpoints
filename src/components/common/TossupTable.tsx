@@ -23,10 +23,6 @@ export function TossupTable({ tossups, format }: TossupTableProps) {
             sortKey: "answer_primary"
         },
         {
-            key: "editions",
-            label: "Editions"
-        },
-        {
             key: "heard",
             label: "Heard"
         },

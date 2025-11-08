@@ -17,10 +17,6 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
             label: "Category",
         }] : []),
         {
-            key: "editions",
-            label: "Editions"
-        },
-        {
             key: "heard",
             label: "Heard"
         },
