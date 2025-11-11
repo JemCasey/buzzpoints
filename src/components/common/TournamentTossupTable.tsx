@@ -60,7 +60,7 @@ export function TournamentTossupTable({ tossups, format }: TournamentTossupTable
         },
         {
             key: "average_buzz",
-            label: "Average Buzz",
+            label: "Avg. Buzz",
             format: formatDecimal
         }
     ];

@@ -47,7 +47,7 @@ export default function TossupSummaryFunc({ tossupSummary, tournament, format }:
             label: "Neg %",
             format: formatPercent
         }] : []),
-        { key: "average_buzz", label: "Average Buzz", format: formatDecimal }
+        { key: "average_buzz", label: "Avg. Buzz", format: formatDecimal }
     ];
 
     return <div className="my-3 mt-3">

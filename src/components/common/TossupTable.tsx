@@ -52,7 +52,7 @@ export function TossupTable({ tossups, format }: TossupTableProps) {
         },
         {
             key: "average_buzz",
-            label: "Average Buzz",
+            label: "Avg. Buzz",
             format: formatDecimal
         }
     ];

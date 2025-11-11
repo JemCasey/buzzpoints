@@ -26,7 +26,7 @@ export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks
         },
         {
             key: "conversion_rate",
-            label: "Conv %",
+            label: "Conv. %",
             format: formatPercent
         },
         ...(format === "superpowers" ? [{
@@ -46,7 +46,7 @@ export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks
         }] : []),
         {
             key: "average_buzz",
-            label: "Average Buzz",
+            label: "Avg. Buzz",
             format: formatDecimal
         }
     ];
