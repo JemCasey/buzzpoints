@@ -31,6 +31,7 @@ export default async function TeamPage(props: { params: Promise<{ slug: string }
             mode="set"
             slug={params.slug}
             format={questionSet.format}
+            bonuses={questionSet.bonuses}
         />
     </Layout>
 }

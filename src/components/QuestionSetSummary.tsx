@@ -58,11 +58,15 @@ export default function QuestionSetSummary({ questionSets, detailPage, format, b
                 }
             ] : []
         ),
-        ...(format !== "pace" ? [{
-            key: "neg_rate",
-            label: "Neg %",
-            format: formatPercent
-        }] : []),
+        ...(format !== "pace" ?
+            [
+                {
+                    key: "neg_rate",
+                    label: "Neg %",
+                    format: formatPercent
+                }
+            ] : []
+        ),
         ...(bonuses ?
             [
                 {
@@ -72,17 +76,17 @@ export default function QuestionSetSummary({ questionSets, detailPage, format, b
                 },
                 {
                     key: "easy_conversion",
-                    label: "Easy %",
+                    label: "E %",
                     format: formatPercent
                 },
                 {
                     key: "medium_conversion",
-                    label: "Medium %",
+                    label: "M %",
                     format: formatPercent
                 },
                 {
                     key: "hard_conversion",
-                    label: "Hard %",
+                    label: "H %",
                     format: formatPercent
                 }
             ] : []

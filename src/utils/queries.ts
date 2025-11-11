@@ -214,6 +214,59 @@ export const getDirectsByBonusQuery = db.prepare(`
         AND (@tournamentId IS NULL OR team.tournament_id = @tournamentId)
 `);
 
+export const getBonusPartsDirectsByTeamQuery = db.prepare(`
+    SELECT  tournament.slug AS tournament_slug,
+            round.number AS round,
+            packet.id as packet_id,
+            packet.name as packet_name,
+            packet.number as packet_number,
+            team.id as team_id,
+            team.name as team_name,
+            opponent.id as opponent_id,
+            opponent.name as opponent_name,
+            question_number,
+            category_main AS category,
+            category_main_slug AS category_slug,
+            easy_part.answer AS easy_part,
+            medium_part.answer AS medium_part,
+            hard_part.answer AS hard_part,
+            easy_part.answer_sanitized AS easy_part_sanitized,
+            medium_part.answer_sanitized AS medium_part_sanitized,
+            hard_part.answer_sanitized AS hard_part_sanitized,
+            easy_part.part_number AS easy_part_number,
+            medium_part.part_number AS medium_part_number,
+            hard_part.part_number AS hard_part_number,
+            easy_part_direct.value AS easy_conversion,
+            medium_part_direct.value AS medium_conversion,
+            hard_part_direct.value AS hard_conversion,
+            easy_part_direct.value + medium_part_direct.value + hard_part_direct.value AS total
+    FROM    tournament
+    JOIN    round ON tournament.id = round.tournament_id
+    JOIN    packet ON round.packet_id = packet.id
+    JOIN    packet_question ON packet.id = packet_question.packet_id
+    JOIN    question ON packet_question.question_id = question.id
+    JOIN    bonus ON bonus.question_id = question.id
+    JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+    AND easy_part.difficulty_modifier = 'e'
+    JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+    AND medium_part.difficulty_modifier = 'm'
+    JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+    AND hard_part.difficulty_modifier = 'h'
+    JOIN    game ON round.id = game.round_id
+    JOIN    team ON (team.id = team_one_id)
+    JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
+        OR  (team.id <> team_two_id AND opponent.id = team_two_id)
+    LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+        AND	game.id = easy_part_direct.game_id
+    LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+        AND	game.id = medium_part_direct.game_id
+    LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+        AND	game.id = hard_part_direct.game_id
+    WHERE   tournament.id = ?
+        AND team.id = ?
+        AND (easy_part_direct.value is not null)
+`);
+
 export const getBuzzesByTossupQuery = db.prepare(`
     SELECT  buzz.id,
             player_id,
@@ -553,7 +606,7 @@ export const getPlayerCategoryStatsQuery = db.prepare(`
                     value,
                     DENSE_RANK() OVER (PARTITION BY tossup_id ORDER BY buzz_position ASC) as buzz_rank
             FROM	raw_buzzes
-        )
+    )
     SELECT	buzz.player_id,
             player.name,
             category_main as category,
@@ -1557,6 +1610,37 @@ export const getTeamLeaderboard = db.prepare(`
                     value,
                     DENSE_RANK() OVER (PARTITION BY tossup_id ORDER BY buzz_position ASC) as buzz_rank
             FROM	raw_buzzes
+        ),
+        raw_bonus AS (
+            SELECT  tournament.slug AS tournament_slug,
+                    team.id as team_id,
+                    team.slug as team_slug,
+                    COUNT(DISTINCT easy_part_direct.id) AS heard,
+                    CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+                    ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+                    ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+                    ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
+            FROM    tournament
+            JOIN    round ON tournament.id = round.tournament_id
+            JOIN    packet ON round.packet_id = packet.id
+            JOIN    packet_question ON packet.id = packet_question.packet_id
+            JOIN    question ON packet_question.question_id = question.id
+            JOIN    bonus ON bonus.question_id = question.id
+            JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+                AND easy_part.difficulty_modifier = 'e'
+            JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+                AND medium_part.difficulty_modifier = 'm'
+            JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+                AND hard_part.difficulty_modifier = 'h'
+            JOIN    game ON round.id = game.round_id
+            LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+                AND	game.id = easy_part_direct.game_id
+            LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+                AND	game.id = medium_part_direct.game_id
+            LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+                AND	game.id = hard_part_direct.game_id
+            JOIN team ON team.id = easy_part_direct.team_id
+            GROUP BY tournament.slug, team.name
         )
     SELECT  team.name,
             team.slug,
@@ -1570,7 +1654,12 @@ export const getTeamLeaderboard = db.prepare(`
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(buzz_rank = 1, 1, 0)) as first_buzz,
             sum(iif(buzz_rank <= 3, 1, 0)) as top_three_buzz,
-            sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points
+            sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points,
+            heard,
+            ppb,
+            easy_conversion,
+            medium_conversion,
+            hard_conversion
     FROM    buzz
     JOIN	game ON buzz.game_id = game.id
     JOIN	round ON game.round_id = round.id
@@ -1579,6 +1668,7 @@ export const getTeamLeaderboard = db.prepare(`
     JOIN	team ON team.id = player.team_id
     LEFT JOIN	buzz_ranks ON buzz.tossup_id = buzz_ranks.tossup_id AND buzz.buzz_position = buzz_ranks.buzz_position AND buzz.value = buzz_ranks.value
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
+    LEFT JOIN	raw_bonus ON team.id = raw_bonus.team_id
     WHERE	tournament.id = ?
         AND	exclude_from_individual = 0
     group by team.name, tournament.slug, team.slug
@@ -1605,6 +1695,37 @@ export const getTeamLeaderboardForQuestionSet = db.prepare(`
                     value,
                     DENSE_RANK() OVER (PARTITION BY tossup_id ORDER BY buzz_position ASC) as buzz_rank
             FROM	raw_buzzes
+        ),
+        raw_bonus AS (
+            SELECT  tournament.slug AS tournament_slug,
+                    team.id as team_id,
+                    team.slug as team_slug,
+                    COUNT(DISTINCT easy_part_direct.id) AS heard,
+                    CAST(SUM(easy_part_direct.value + medium_part_direct.value + hard_part_direct.value) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id) AS ppb,
+                    ROUND(CAST(SUM(IIF(easy_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS easy_conversion,
+                    ROUND(CAST(SUM(IIF(medium_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS medium_conversion,
+                    ROUND(CAST(SUM(IIF(hard_part_direct.value > 0, 1, 0)) AS FLOAT) / COUNT(DISTINCT easy_part_direct.id), 3) AS hard_conversion
+            FROM    tournament
+            JOIN    round ON tournament.id = round.tournament_id
+            JOIN    packet ON round.packet_id = packet.id
+            JOIN    packet_question ON packet.id = packet_question.packet_id
+            JOIN    question ON packet_question.question_id = question.id
+            JOIN    bonus ON bonus.question_id = question.id
+            JOIN    bonus_part easy_part on bonus.id = easy_part.bonus_id
+                AND easy_part.difficulty_modifier = 'e'
+            JOIN    bonus_part medium_part on bonus.id = medium_part.bonus_id
+                AND medium_part.difficulty_modifier = 'm'
+            JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
+                AND hard_part.difficulty_modifier = 'h'
+            JOIN    game ON round.id = game.round_id
+            LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
+                AND	game.id = easy_part_direct.game_id
+            LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
+                AND	game.id = medium_part_direct.game_id
+            LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
+                AND	game.id = hard_part_direct.game_id
+            JOIN team ON team.id = easy_part_direct.team_id
+            GROUP BY tournament.slug, team.name
         )
     SELECT  team.name,
             team.slug,
@@ -1619,7 +1740,12 @@ export const getTeamLeaderboardForQuestionSet = db.prepare(`
             avg(iif(buzz.value > 0, buzz.buzz_position, NULL)) average_buzz,
             sum(iif(buzz_rank = 1, 1, 0)) as first_buzz,
             sum(iif(buzz_rank <= 3, 1, 0)) as top_three_buzz,
-            sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points
+            sum(iif(buzz.value > 10, 15, iif(buzz.value = 10, 10, iif(buzz.value < 0, -5, 0)))) as points,
+            heard,
+            ppb,
+            easy_conversion,
+            medium_conversion,
+            hard_conversion
     FROM    buzz
     JOIN	game ON buzz.game_id = game.id
     JOIN	round ON game.round_id = round.id
@@ -1630,6 +1756,7 @@ export const getTeamLeaderboardForQuestionSet = db.prepare(`
     JOIN	team ON team.id = player.team_id
     LEFT JOIN	buzz_ranks ON buzz.tossup_id = buzz_ranks.tossup_id AND buzz.buzz_position = buzz_ranks.buzz_position AND buzz.value = buzz_ranks.value
     LEFT JOIN	buzz neg ON buzz.game_id = neg.game_id AND buzz.tossup_id = neg.tossup_id AND buzz.value > 0 AND neg.value < 0
+    LEFT JOIN	raw_bonus ON team.id = raw_bonus.team_id
     WHERE	question_set_edition.question_set_id = ?
         AND	exclude_from_individual = 0
     group by team.name, tournament.slug, question_set.slug, team.slug

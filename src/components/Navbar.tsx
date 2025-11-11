@@ -4,7 +4,6 @@ import { Bonus, QuestionSet, Tournament } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation"
-import { getBonusesByQuestionSetQuery, getBonusesByTournamentQuery } from "@/utils/queries";
 
 type NavbarProps = {
     tournament?: Tournament;

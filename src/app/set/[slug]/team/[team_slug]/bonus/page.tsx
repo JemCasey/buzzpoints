@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getPlayersByTeamAndTournamentQuery, getQuestionSetsQuery, getTeamsByQuestionSetQuery, getQuestionSetBySlug, getTeamCategoryStatsByQuestionSetQuery } from "@/utils/queries";
-import { BonusCategory, Team, Tournament, Player, QuestionSet } from "@/types";
-import BonusCategoryTable from "@/components/BonusCategoryTable";
+import { getPlayersByTeamAndTournamentQuery, getQuestionSetsQuery, getTeamsByQuestionSetQuery, getQuestionSetBySlug,getBonusPartsDirectsByTeamQuery } from "@/utils/queries";
+import { BonusCategory, Team, Tournament, Player, QuestionSet, BonusPart, BonusDirect, Bonus } from "@/types";
+import TeamBonusTable from "@/components/common/TeamBonusTable";
 
 export async function generateStaticParams() {
     const questionSets = getQuestionSetsQuery.all() as QuestionSet[];
@@ -35,9 +35,12 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
 export default async function TeamPage(props: { params: Promise<{ slug: string, team_slug: string }> }) {
     const params = await props.params;
     const questionSet = getQuestionSetBySlug(params.slug);
-    const teamTournament = (getTeamsByQuestionSetQuery.all(questionSet.id) as Team[]).find((t) => t.slug === params.team_slug);
-    const bonusTeamCategoryStats = getTeamCategoryStatsByQuestionSetQuery.all(questionSet.id, params.team_slug) as BonusCategory[];
+    const teamTournament = (getTeamsByQuestionSetQuery.all(questionSet.id) as Team[]).find((t) => t.slug === params.team_slug) as Team;
     const players = getPlayersByTeamAndTournamentQuery.all(params.team_slug, teamTournament?.tournament_id) as Player[];
+    const bonus = getBonusPartsDirectsByTeamQuery.all(
+        teamTournament?.tournament_id,
+        teamTournament?.id,
+    ) as Bonus[];
 
     const playerLinks = players.map((x, i, array) =>
         i === array.length - 1
@@ -54,17 +57,19 @@ export default async function TeamPage(props: { params: Promise<{ slug: string, 
                 <br></br>
                 {playerLinks}
             </h3>
+            <div className="text-center mb-5">
+                <Link href={`/set/${params.slug}/team/${params.team_slug}`}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                    View Categories
+                </Link>
+            </div>
             {!!questionSet.bonuses &&
-                <div className="text-center mb-5">
-                    <Link href={`/set/${params.slug}/team/${params.team_slug}/bonus`}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                        View Bonuses
-                    </Link>
-                </div>
-            }
-            {!!questionSet.bonuses &&
-                <BonusCategoryTable bonusCategoryStats={bonusTeamCategoryStats} mode="set" slug={params.slug} />
+                <TeamBonusTable
+                    bonus={bonus!}
+                    mode="set"
+                    slug={params.slug}
+                />
             }
         </Layout>
     );

@@ -43,7 +43,7 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
         }] : []),
         {
             key: "easy_conversion",
-            label: mode !== "summary" ? "%" : "Easy %",
+            label: mode !== "summary" ? "%" : "E %",
             format: formatPercent
         },
         ...(mode !== "summary" ? [{
@@ -64,7 +64,7 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
         }] : []),
         {
             key: "medium_conversion",
-            label: mode !== "summary" ? "%" : "Medium %",
+            label: mode !== "summary" ? "%" : "M %",
             format: formatPercent
         },
         ...(mode !== "summary" ? [{
@@ -85,7 +85,7 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
         }] : []),
         {
             key: "hard_conversion",
-            label: mode !== "summary" ? "%" : "Hard %",
+            label: mode !== "summary" ? "%" : "H %",
             format: formatPercent
         }
     ];

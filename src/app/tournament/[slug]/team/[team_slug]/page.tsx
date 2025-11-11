@@ -54,6 +54,15 @@ export default async function TeamPage(props: { params: Promise<{ slug: string, 
                 {playerLinks}
             </h3>
             {!!tournament.question_set.bonuses &&
+                <div className="text-center mb-5">
+                    <Link href={`/set/${tournament.question_set.slug}/team/${params.team_slug}/bonus`}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                        View Bonuses
+                    </Link>
+                </div>
+            }
+            {!!tournament.question_set.bonuses &&
                 <BonusCategoryTable bonusCategoryStats={bonusTeamCategoryStats} mode="tournament" slug={params.slug} />
             }
         </Layout>

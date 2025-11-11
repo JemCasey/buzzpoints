@@ -31,9 +31,9 @@ export default function BonusSummaryFunc({ tournament, bonusSummary }: BonusSumm
         },
         { key: "heard", label: "Heard" },
         { key: "ppb", label: "PPB", format: formatDecimal },
-        { key: "easy_conversion", label: "Easy %", format: formatPercent },
-        { key: "medium_conversion", label: "Medium %", format: formatPercent },
-        { key: "hard_conversion", label: "Hard %", format: formatPercent },
+        { key: "easy_conversion", label: "E %", format: formatPercent },
+        { key: "medium_conversion", label: "M %", format: formatPercent },
+        { key: "hard_conversion", label: "H %", format: formatPercent },
     ];
 
     return <div className="my-3 mt-3">

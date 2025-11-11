@@ -32,19 +32,19 @@ export default function BonusCategoryTable({ bonusCategoryStats, categoryLinks =
         },
         {
             key: "easy_conversion",
-            label: "Easy %",
+            label: "E %",
             format: formatPercent,
             defaultDescending: true
         },
         {
             key: "medium_conversion",
-            label: "Medium %",
+            label: "M %",
             format: formatPercent,
             defaultDescending: true
         },
         {
             key: "hard_conversion",
-            label: "Hard %",
+            label: "H %",
             format: formatPercent,
             defaultDescending: true
         }

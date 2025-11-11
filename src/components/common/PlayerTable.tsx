@@ -64,12 +64,12 @@ export function PlayerTable({ players, mode, slug, format }: PlayerTableProps) {
             format: formatDecimal
         },
         {
-            key: "first_buzzes",
+            key: "first_buzz",
             label: "First Buzzes",
             defaultDescending: true
         },
         {
-            key: "top_three_buzzes",
+            key: "top_three_buzz",
             label: "Top 3 Buzzes",
             defaultDescending: true
         }
