@@ -28,7 +28,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
 
     return {
         title: `${questionSet.name} - Buzzpoints`,
-        description: `Team category data for ${questionSet!.name}`,
+        description: `Team bonus data for ${questionSet!.name}`,
     };
 }
 

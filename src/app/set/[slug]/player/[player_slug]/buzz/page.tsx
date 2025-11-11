@@ -54,7 +54,11 @@ export default async function PlayerPage(props: { params: Promise<{ slug: string
                     View Category Stats
                 </Link>
             </div>
-            <PlayerBuzzTable buzzes={buzzes} mode="set" slug={params.slug} />
+            <PlayerBuzzTable
+                buzzes={buzzes}
+                mode="set"
+                slug={params.slug}
+            />
         </Layout>
     );
 }

@@ -17,7 +17,7 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
         },
         {
             key: "question_number",
-            label: "Question #",
+            label: "#",
         },
         {
             key: "category",
@@ -34,7 +34,7 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
         },
         {
             key: "buzz_position",
-            label: "Position",
+            label: "Buzzpoint",
             defaultDescending: true,
         },
         {
@@ -46,7 +46,7 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
             label: "First",
             render: (b: any) => (
                 <>
-                    {b.first_buzz > 0 ? "✓" : "✕"}
+                    {b.first_buzz > 0 ? "✓" : ""}
                 </>
             )
         },
@@ -55,7 +55,7 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
             label: "Top 3",
             render: (b: any) => (
                 <>
-                    {b.top_three_buzz > 0 ? "✓" : "✕"}
+                    {b.top_three_buzz > 0 ? "✓" : ""}
                 </>
             )
         },

@@ -28,7 +28,7 @@ export default function TossupBuzzes({ buzzes, buzzpoint, setBuzzpoint, mode, sl
         },
         {
             key: "buzz_position",
-            label: "Position",
+            label: "Buzzpoint",
             defaultSort: "asc" as const
         },
         {

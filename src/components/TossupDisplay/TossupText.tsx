@@ -111,7 +111,7 @@ export default function TossupText({ tossup: { question, answer, metadata, packe
         </div>
         <div className="text-xs relative mt-2 mb-2">
             <span className="average-buzz-line" style={{height: "100%"}}></span>
-            <span className="ms-2"> = Average correct buzz position</span>
+            <span className="ms-2"> = Average correct buzzpoint</span>
         </div>
     </>
 }
