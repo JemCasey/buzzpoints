@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <Layout>
       <div>
-        Welcome to Buzzpoints! Use the headers above to <Link href="/set" className="underline">here to view stats by question set</Link> or <Link href="/tournament" className="underline">here to view stats by tournament</Link>.
+        Welcome to Buzzpoints! Use the headers above to <Link href="/set" className="underline">view stats by question set</Link> or <Link href="/tournament" className="underline">view stats by tournament</Link>.
       </div>
       <br></br>
       <div>
