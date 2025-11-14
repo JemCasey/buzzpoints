@@ -19,6 +19,16 @@ type BonusDisplayProps = {
 }
 
 export default function BonusDisplay({ bonus, parts, directs, tournament, questionSet, navOptions, bonusSummary }: BonusDisplayProps) {
+    let questionHeader = "";
+    if (!!bonus.round) {
+        questionHeader = `Round ${bonus.round}: `;
+    } else if (bonus.packet_descriptor.length < 5) {
+        questionHeader = `Packet ${bonus.packet_descriptor}: `
+    } else if (!!bonus.packet_number) {
+        questionHeader = `Packet ${bonus.packet_number}: `;
+    }
+    questionHeader += `Bonus ${bonus.question_number}`;
+
     return <div className="flex flex-col md:flex-row md:space-x-10">
         <div className="md:basis-1/2">
             {!!navOptions && !!tournament && <div className="mb-2">
@@ -26,11 +36,11 @@ export default function BonusDisplay({ bonus, parts, directs, tournament, questi
                 {!!navOptions.previous && !!navOptions.next && " - "}
                 {!!navOptions.next && <Link href={`/tournament/${tournament.slug}/bonus/${navOptions.next.round}/${navOptions.next.number}`} className="underline">Next bonus</Link>}
             </div>}
-            <h3 className="text-xl font-bold my-3">{!!bonus.round ? `Round ${bonus.round}: ` : (!!bonus.packet_number ? `Packet ${bonus.packet_number}: ` : "")}Bonus {bonus.question_number}</h3>
+            <h3 className="text-xl font-bold my-3">{questionHeader}</h3>
             <BonusText parts={parts} />
             <div>
                 {!!parts[0]?.metadata && <span>{"<" + removeBadPunc(parts[0]?.metadata) + ">"}</span>}
-                {bonus.packet_name && <span>&nbsp;|&nbsp;{removeBadPunc(bonus.packet_name)}</span>}
+                {(!!bonus.packet_descriptor || !!bonus.packet_name) && <span>&nbsp;|&nbsp;{removeBadPunc(bonus.packet_descriptor ? `Packet ${bonus.packet_descriptor}` : bonus.packet_name)}</span>}
             </div>
             <br></br>
             <BonusTable bonuses={[bonus]} mode="summary" />

@@ -25,6 +25,16 @@ export default function TossupDisplay({ tossup, buzzes, tournament, questionSet,
         [b.buzz_position]: [...a[b.buzz_position] || [], b.value]
     }), {} as BuzzDictionary);
 
+    let questionHeader = "";
+    if (!!tossup.round) {
+        questionHeader = `Round ${tossup.round}: `;
+    } else if (tossup.packet_descriptor.length < 3) {
+        questionHeader = `Packet ${tossup.packet_descriptor}: `
+    } else if (!!tossup.packet_number) {
+        questionHeader = `Packet ${tossup.packet_number}: `;
+    }
+    questionHeader += `Tossup ${tossup.question_number}`;
+
     return (
         <div className="flex flex-col md:flex-row md:space-x-10">
             <div className="md:basis-1/2">
@@ -33,7 +43,7 @@ export default function TossupDisplay({ tossup, buzzes, tournament, questionSet,
                     {!!navOptions.previous && !!navOptions.next && " - "}
                     {!!navOptions.next && <Link href={`/tournament/${tournament.slug}/tossup/${navOptions.next.round}/${navOptions.next.number}`} className="underline">Next tossup</Link>}
                 </div>}
-                <h3 className="text-xl font-bold my-3">{!!tossup.round ? `Round ${tossup.round}: ` : (!!tossup.packet_number ? `Packet ${tossup.packet_number}: ` : "")}Tossup {tossup.question_number}</h3>
+                <h3 className="text-xl font-bold my-3">{questionHeader}</h3>
                 <TossupText tossup={tossup}
                     buzzes={buzzDictionary}
                     hoverPosition={hoverPosition}

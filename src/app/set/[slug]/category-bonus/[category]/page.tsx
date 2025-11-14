@@ -45,7 +45,10 @@ export default async function TeamPage(props: { params: Promise<{ slug: string, 
     return (
         <Layout questionSet={questionSet}>
             <h3 className="text-xl text-center mb-3"><b>{bonusTeamCategoryStats[0]?.category || "N/A"}</b></h3>
-            <TeamCategoryTable bonusCategoryStats={bonusTeamCategoryStats} mode="set" />
+            <TeamCategoryTable
+                bonusCategoryStats={bonusTeamCategoryStats}
+                mode="set"
+            />
         </Layout>
     );
 }

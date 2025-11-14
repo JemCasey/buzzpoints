@@ -11,7 +11,7 @@ type TossupText = {
     onBuzzpointChange: (buzzpoint:number) => void;
 }
 
-export default function TossupText({ tossup: { question, answer, metadata, packet_name }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
+export default function TossupText({ tossup: { question, answer, metadata, packet_descriptor, packet_name }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
     // keywords--for now just the the powermark--shouldn't render as clickable words
     const keywords = ["(+)", "(*)", "[*]", "{*}", "[read", "slowly]", "[emphasize]", "[emphasise]"];
     const getWords = (question:string) => {
@@ -107,7 +107,7 @@ export default function TossupText({ tossup: { question, answer, metadata, packe
         <div>ANSWER: <span dangerouslySetInnerHTML={{ __html: answer }}></span></div>
         <div>
             {metadata && <span>{"<" + removeBadPunc(metadata) + ">"}</span>}
-            {packet_name && <span>&nbsp;|&nbsp;{removeBadPunc(packet_name)}</span>}
+            {(!!packet_descriptor || !!packet_name) && <span>&nbsp;|&nbsp;{removeBadPunc(packet_descriptor ? `Packet ${packet_descriptor}` : packet_name)}</span>}
         </div>
         <div className="text-xs relative mt-2 mb-2">
             <span className="average-buzz-line" style={{height: "100%"}}></span>

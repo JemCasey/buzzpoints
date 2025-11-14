@@ -29,6 +29,7 @@ export type Question = {
     question_set_edition_name: string;
     round: number;
     packet_id: string;
+    packet_descriptor: string;
     packet_number: string;
     packet_name: string;
     question_number: number;
