@@ -40,7 +40,8 @@ export default function BonusDisplay({ bonus, parts, directs, tournament, questi
             <BonusText parts={parts} />
             <div>
                 {!!parts[0]?.metadata && <span>{"<" + removeBadPunc(parts[0]?.metadata) + ">"}</span>}
-                {!!bonus.packet_name && <span>&nbsp;|&nbsp;{removeBadPunc(bonus.packet_name)}</span>}
+                {(!!parts[0]?.metadata && !!bonus.packet_name) && <span>&nbsp;|&nbsp;</span>}
+                {!!bonus.packet_name && <span>{removeBadPunc(bonus.packet_name)}</span>}
             </div>
             <br></br>
             <BonusTable bonuses={[bonus]} mode="summary" />

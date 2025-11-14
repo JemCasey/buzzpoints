@@ -107,7 +107,8 @@ export default function TossupText({ tossup: { question, answer, metadata, packe
         <div>ANSWER: <span dangerouslySetInnerHTML={{ __html: answer }}></span></div>
         <div>
             {metadata && <span>{"<" + removeBadPunc(metadata) + ">"}</span>}
-            {!!packet_name && <span>&nbsp;|&nbsp;{removeBadPunc(packet_name)}</span>}
+            {(!!metadata && !!packet_name) && <span>&nbsp;|&nbsp;</span>}
+            {!!packet_name && <span>{removeBadPunc(packet_name)}</span>}
         </div>
         <div className="text-xs relative mt-2 mb-2">
             <span className="average-buzz-line" style={{height: "100%"}}></span>
