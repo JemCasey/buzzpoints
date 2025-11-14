@@ -22,7 +22,7 @@ export default function BonusDisplay({ bonus, parts, directs, tournament, questi
     let questionHeader = "";
     if (!!bonus.round) {
         questionHeader = `Round ${bonus.round}: `;
-    } else if (bonus.packet_descriptor.length < 5) {
+    } else if (bonus.packet_descriptor.length < 3) {
         questionHeader = `Packet ${bonus.packet_descriptor}: `
     } else if (!!bonus.packet_number) {
         questionHeader = `Packet ${bonus.packet_number}: `;
@@ -40,7 +40,7 @@ export default function BonusDisplay({ bonus, parts, directs, tournament, questi
             <BonusText parts={parts} />
             <div>
                 {!!parts[0]?.metadata && <span>{"<" + removeBadPunc(parts[0]?.metadata) + ">"}</span>}
-                {(!!bonus.packet_descriptor || !!bonus.packet_name) && <span>&nbsp;|&nbsp;{removeBadPunc(bonus.packet_descriptor ? `Packet ${bonus.packet_descriptor}` : bonus.packet_name)}</span>}
+                {!!bonus.packet_name && <span>&nbsp;|&nbsp;{removeBadPunc(bonus.packet_name)}</span>}
             </div>
             <br></br>
             <BonusTable bonuses={[bonus]} mode="summary" />
