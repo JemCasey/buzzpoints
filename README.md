@@ -82,3 +82,7 @@ To request bug fixes and/or new features, [file an Issue](https://github.com/Jem
 ## Contributing
 
 To contribute to or develop this toolset, please [fork the repository](https://github.com/JemCasey/buzzpoints/fork) and [submit a Pull Request](https://github.com/JemCasey/buzzpoints/compare).
+
+## Credits
+
+This tool was created by [Jordan Brownstein](https://github.com/JemCasey/). [Ani Perumalla](https://github.com/ani-per/) contributed some features after its initial development.
