@@ -1,15 +1,24 @@
-'use client';
+"use client";
 
 import { Tossup } from "@/types";
 import Table from "../Table";
 import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
 
 type TournamentTossupTableProps = {
-    tossups: Tossup[]
+    tossups: Tossup[];
+    format?: string;
 }
 
-export function TournamentTossupTable({ tossups }: TournamentTossupTableProps) {
+export function TournamentTossupTable({ tossups, format }: TournamentTossupTableProps) {
     const columns = [
+        {
+            key: "round",
+            label: "Round"
+        },
+        {
+            key: "question_number",
+            label: "#"
+        },
         {
             key: "category",
             label: "Category"
@@ -17,13 +26,9 @@ export function TournamentTossupTable({ tossups }: TournamentTossupTableProps) {
         {
             key: "answer",
             label: "Answer",
-            linkTemplate: "/set/{{set_slug}}/tossup/{{slug}}",
+            linkTemplate: "/tournament/{{tournament_slug}}/tossup/{{round}}/{{question_number}}",
             html: true,
             sortKey: "answer_primary"
-        },
-        {
-            key: "editions",
-            label: "Editions"
         },
         {
             key: "heard",
@@ -34,23 +39,28 @@ export function TournamentTossupTable({ tossups }: TournamentTossupTableProps) {
             label: "Conv. %",
             format: formatPercent
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpower_rate",
+            label: "Superpower %",
+            format: formatPercent,
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "power_rate",
             label: "Power %",
-            format: formatPercent
-        },
-        {
+            format: formatPercent,
+        }] : []),
+        ...(format !== "pace" ? [{
             key: "neg_rate",
             label: "Neg %",
             format: formatPercent
-        },
+        }] : []),
         {
             key: "first_buzz",
             label: "First Buzz"
         },
         {
             key: "average_buzz",
-            label: "Average Buzz",
+            label: "Avg. Buzz",
             format: formatDecimal
         }
     ];

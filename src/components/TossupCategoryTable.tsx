@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { TossupCategory } from "@/types";
 import Table from "./Table";
@@ -7,14 +7,17 @@ import { formatDecimal, formatPercent } from "@/utils";
 type TossupCategoryTableProps = {
     tossupCategoryStats: TossupCategory[];
     categoryLinks?: boolean;
+    mode?: "set" | "tournament";
+    slug?: string;
+    format?: string;
 }
 
-export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks = true }: TossupCategoryTableProps) {
+export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks = true, mode, slug, format }: TossupCategoryTableProps) {
     const columns = [
         {
             key: "category",
             label: "Category",
-            linkTemplate: categoryLinks ? "/tournament/{{tournament_slug}}/category-tossup/{{category_slug}}" : undefined,
+            linkTemplate: categoryLinks ? `/${mode}/${slug}/category-tossup/{{category_slug}}` : undefined,
             html: true
         },
         {
@@ -23,22 +26,27 @@ export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks
         },
         {
             key: "conversion_rate",
-            label: "Conv %",
+            label: "Conv. %",
             format: formatPercent
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpower_rate",
+            label: "Superpower %",
+            format: formatPercent,
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "power_rate",
             label: "Power %",
-            format: formatPercent
-        },
-        {
+            format: formatPercent,
+        }] : []),
+        ...(format !== "pace" ? [{
             key: "neg_rate",
             label: "Neg %",
             format: formatPercent
-        },
+        }] : []),
         {
             key: "average_buzz",
-            label: "Average Buzz",
+            label: "Avg. Buzz",
             format: formatDecimal
         }
     ];

@@ -1,44 +1,52 @@
-'use client';
+"use client";
 
 import Table from "../Table";
 import { formatDecimal } from "@/utils";
 
 type PlayerTableProps = {
-    players: any[]
+    players: any[];
+    mode?: "tournament" | "set";
+    slug?: string;
+    format?: string;
 }
 
-export function PlayerTable({ players }: PlayerTableProps) {
+export function PlayerTable({ players, mode, slug, format }: PlayerTableProps) {
     const columns = [
         {
             key: "name",
             label: "Player",
-            linkTemplate: "/tournament/{{tournament_slug}}/player/{{slug}}",
+            linkTemplate: `/${mode}/${slug}/player/{{slug}}`,
             html: true
         },
         {
             key: "team_name",
             label: "Team",
-            linkTemplate: "/tournament/{{tournament_slug}}/team/{{team_slug}}",
+            linkTemplate: `/${mode}/${slug}/team/{{team_slug}}`,
             html: true
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpowers",
+            label: "Superpowers",
+            defaultDescending: true
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "powers",
             label: "Powers",
             defaultDescending: true
-        },
+        }] : []),
         {
             key: "gets",
             label: "Gets",
             defaultDescending: true
         },
-        {
+        ...(format !== "pace" ? [{
             key: "negs",
             label: "Negs",
             defaultDescending: true
-        },
+        }] : []),
         {
-            key: "bouncebacks",
-            label: "Bouncebacks",
+            key: "rebounds",
+            label: "Rebounds",
             defaultDescending: true
         },
         {
@@ -56,12 +64,12 @@ export function PlayerTable({ players }: PlayerTableProps) {
             format: formatDecimal
         },
         {
-            key: "first_buzzes",
+            key: "first_buzz",
             label: "First Buzzes",
             defaultDescending: true
         },
         {
-            key: "top_three_buzzes",
+            key: "top_three_buzz",
             label: "Top 3 Buzzes",
             defaultDescending: true
         }

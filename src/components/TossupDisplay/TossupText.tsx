@@ -1,4 +1,4 @@
-import { removeTags, sanitize } from "@/utils";
+import { removeBadPunc, removeTags, sanitize } from "@/utils";
 import TossupWord from "./TossupWord";
 import { BuzzDictionary, Tossup, Word } from "@/types";
 
@@ -11,17 +11,17 @@ type TossupText = {
     onBuzzpointChange: (buzzpoint:number) => void;
 }
 
-export default function TossupText({ tossup: { question, answer, metadata }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
+export default function TossupText({ tossup: { question, answer, metadata, packet_descriptor, packet_name }, buzzes, hoverPosition, averageBuzz, buzzpoint, onBuzzpointChange }: TossupText) {
     // keywords--for now just the the powermark--shouldn't render as clickable words
-    const keywords = ["(*)", "[*]", "{*}"];
+    const keywords = ["(+)", "(*)", "[*]", "{*}", "[read", "slowly]", "[emphasize]", "[emphasise]"];
     const getWords = (question:string) => {
         let emphasis = false;
         let bold = false;
         let pg = false;
         let powerbreak = false;
 
-        let words = question.replaceAll('&nbsp;', ' ').split(' ').reduce((prev, curr) => {
-            let word = removeTags(curr).replace(/^\W*/, '').replace(/\W*$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        let words = question.replaceAll("&nbsp;", " ").split(" ").reduce((prev, curr) => {
+            let word = removeTags(curr).replace(/^\W*/, "").replace(/\W*$/g, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
             if (curr.match(`<em>.*${word}`))
                 emphasis = true;
@@ -45,15 +45,15 @@ export default function TossupText({ tossup: { question, answer, metadata }, buz
             } else {
                 if (!pg && !powerbreak) {
                     let { pgText } = prev;
-    
+
                     prev.words.push({
                         text: removeTags(curr),
                         emphasis,
                         bold,
-                        pgText: pgText.join(' '),
+                        pgText: pgText.join(" "),
                         keywords: prev.keywords
                     });
-    
+
                     prev.pgText = [];
                     prev.keywords = [];
                 } else {
@@ -82,7 +82,7 @@ export default function TossupText({ tossup: { question, answer, metadata }, buz
         }).words;
 
         words.push({
-            text: '■END■'
+            text: "■END■"
         });
 
         return words;
@@ -91,7 +91,7 @@ export default function TossupText({ tossup: { question, answer, metadata }, buz
     let words = getWords(question);
 
     return <>
-        <p style={{ marginBottom: '0.1em' }}>
+        <p style={{ marginBottom: "0.1em" }}>
             {words.map((w, i) =>
                 <TossupWord word={w}
                     index={i}
@@ -105,10 +105,14 @@ export default function TossupText({ tossup: { question, answer, metadata }, buz
             )}
         </p>
         <div>ANSWER: <span dangerouslySetInnerHTML={{ __html: answer }}></span></div>
-        {metadata && <div>{"<" + metadata + ">"}</div>}
+        <div>
+            {metadata && <span>{"<" + removeBadPunc(metadata) + ">"}</span>}
+            {(!!metadata && !!packet_name) && <span>&nbsp;|&nbsp;</span>}
+            {!!packet_name && <span>{removeBadPunc(packet_name)}</span>}
+        </div>
         <div className="text-xs relative mt-2 mb-2">
-            <span className="average-buzz-line" style={{height: '100%'}}></span>
-            <span className="ms-2"> = Average correct buzz position</span>
+            <span className="average-buzz-line" style={{height: "100%"}}></span>
+            <span className="ms-2"> = Average correct buzzpoint</span>
         </div>
     </>
 }

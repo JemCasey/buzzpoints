@@ -1,38 +1,47 @@
-'use client';
+"use client";
 
 import Table from "../Table";
-import { formatDecimal } from "@/utils";
+import { formatDecimal, formatPercent } from "@/utils";
 
 type TeamTableProps = {
-    teams: any[]
+    teams: any[];
+    mode?: "set" | "tournament";
+    slug?: string;
+    format?: string;
+    bonuses?: boolean;
 }
 
-export function TeamTable({ teams }: TeamTableProps) {
+export function TeamTable({ teams, mode, slug, format, bonuses }: TeamTableProps) {
     const columns = [
         {
             key: "name",
             label: "Team",
-            linkTemplate: "/tournament/{{tournament_slug}}/team/{{slug}}",
+            linkTemplate: `/${mode}/${slug}/team/{{slug}}`,
             html: true
         },
-        {
+        ...(format === "superpowers" ? [{
+            key: "superpowers",
+            label: "Superpowers",
+            defaultDescending: true
+        }] : []),
+        ...(format !== "acf" ? [{
             key: "powers",
             label: "Powers",
             defaultDescending: true
-        },
+        }] : []),
         {
             key: "gets",
             label: "Gets",
             defaultDescending: true
         },
-        {
+        ...(format !== "pace" ? [{
             key: "negs",
             label: "Negs",
             defaultDescending: true
-        },
+        }] : []),
         {
-            key: "bouncebacks",
-            label: "Bouncebacks",
+            key: "rebounds",
+            label: "Rebounds",
             defaultDescending: true
         },
         {
@@ -50,20 +59,43 @@ export function TeamTable({ teams }: TeamTableProps) {
             format: formatDecimal
         },
         {
-            key: "first_buzzes",
+            key: "first_buzz",
             label: "First Buzzes",
             defaultDescending: true
         },
         {
-            key: "top_three_buzzes",
+            key: "top_three_buzz",
             label: "Top 3 Buzzes",
             defaultDescending: true
         },
-        // {
-        //     key: "ppb",
-        //     label: "PPB",
-        //     format: formatDecimal
-        // }
+        ...(bonuses ?
+            [
+                {
+                    key: "heard",
+                    label: "Bonuses"
+                },
+                {
+                    key: "ppb",
+                    label: "PPB",
+                    format: formatDecimal
+                },
+                {
+                    key: "easy_conversion",
+                    label: "E %",
+                    format: formatPercent
+                },
+                {
+                    key: "medium_conversion",
+                    label: "M %",
+                    format: formatPercent
+                },
+                {
+                    key: "hard_conversion",
+                    label: "H %",
+                    format: formatPercent
+                }
+            ] : []
+        )
     ];
 
     return <Table

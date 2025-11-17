@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Bonus } from "@/types";
 import Table from "../Table";
@@ -7,22 +7,15 @@ import Link from "next/link";
 
 type BonusTableProps = {
     bonuses: Bonus[]
+    mode?: "full" | "summary";
 }
 
-export function BonusTable({ bonuses }: BonusTableProps) {
+export function BonusTable({ bonuses, mode }: BonusTableProps) {
     const columns = [
-        {
-            key: "round",
-            label: "Round"
-        },
-        {
-            key: "question_number",
-            label: "#"
-        },
-        {
+        ...(mode !== "summary" ? [{
             key: "category",
-            label: "Category"
-        },
+            label: "Category",
+        }] : []),
         {
             key: "heard",
             label: "Heard"
@@ -32,14 +25,14 @@ export function BonusTable({ bonuses }: BonusTableProps) {
             label: "PPB",
             format: formatDecimal
         },
-        {
+        ...(mode !== "summary" ? [{
             key: "easy_part",
             label: "Easy",
             sortKey: "easy_part_sanitized",
-            render: (item:Bonus) => (
+            render: (item: Bonus) => (
                 <>
                     <Link
-                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
+                        href={`/set/${item.set_slug}/bonus/${item.slug}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.easy_part }}></span>
@@ -47,20 +40,20 @@ export function BonusTable({ bonuses }: BonusTableProps) {
                     <span className="ms-1 text-xs font-light">{`(Part ${item.easy_part_number})`}</span>
                 </>
             )
-        },
+        }] : []),
         {
             key: "easy_conversion",
-            label: "%",
+            label: mode !== "summary" ? "%" : "E %",
             format: formatPercent
         },
-        {
+        ...(mode !== "summary" ? [{
             key: "medium_part",
             label: "Medium",
             sortKey: "medium_part_sanitized",
-            render: (item:Bonus) => (
+            render: (item: Bonus) => (
                 <>
                     <Link
-                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
+                        href={`/set/${item.set_slug}/bonus/${item.slug}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.medium_part }}></span>
@@ -68,20 +61,20 @@ export function BonusTable({ bonuses }: BonusTableProps) {
                     <span className="ms-1 text-xs font-light">{`(Part ${item.medium_part_number})`}</span>
                 </>
             )
-        },
+        }] : []),
         {
             key: "medium_conversion",
-            label: "%",
+            label: mode !== "summary" ? "%" : "M %",
             format: formatPercent
         },
-        {
+        ...(mode !== "summary" ? [{
             key: "hard_part",
             label: "Hard",
             sortKey: "hard_part_sanitized",
-            render: (item:Bonus) => (
+            render: (item: Bonus) => (
                 <>
                     <Link
-                        href={`/tournament/${item.tournament_slug}/bonus/${item.round}/${item.question_number}`}
+                        href={`/set/${item.set_slug}/bonus/${item.slug}`}
                         className="underline"
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.hard_part }}></span>
@@ -89,21 +82,21 @@ export function BonusTable({ bonuses }: BonusTableProps) {
                     <span className="ms-1 text-xs font-light">{`(Part ${item.hard_part_number})`}</span>
                 </>
             )
-        },
+        }] : []),
         {
             key: "hard_conversion",
-            label: "%",
+            label: mode !== "summary" ? "%" : "H %",
             format: formatPercent
         }
     ];
 
     return <Table
         columns={columns}
-        data={bonuses.map(t => ({
-            ...t,
-            easy_part: shortenAnswerline(t.easy_part),
-            medium_part: shortenAnswerline(t.medium_part),
-            hard_part: shortenAnswerline(t.hard_part),
+        data={bonuses.map(b => ({
+            ...b,
+            easy_part: shortenAnswerline(b.easy_part),
+            medium_part: shortenAnswerline(b.medium_part),
+            hard_part: shortenAnswerline(b.hard_part),
         }))}
         compact
     />

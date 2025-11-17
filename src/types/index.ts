@@ -16,6 +16,8 @@ export type QuestionSet = {
     name: string;
     slug: string;
     difficulty: string;
+    format: string;
+    bonuses: boolean;
     edition: string;
     edition_count: number;
 }
@@ -24,7 +26,12 @@ export type Question = {
     id: number;
     set_slug: string;
     tournament_slug: string;
+    question_set_edition_name: string;
     round: number;
+    packet_id: string;
+    packet_descriptor: string;
+    packet_number: string;
+    packet_name: string;
     question_number: number;
     metadata: string;
     author: string;
@@ -39,10 +46,12 @@ export type TossupConversion = {
     name: string;
     heard: number;
     conversion_rate: number;
+    superpower_rate: number;
     power_rate: number;
     neg_rate: number;
     first_buzz: number;
     average_buzz: number;
+    percent_points: number;
 }
 
 export type Tossup = Question & {
@@ -60,6 +69,7 @@ export type BonusConversion = {
 }
 
 export type Bonus = Question & {
+    id: number;
     easy_part: string;
     easy_part_sanitized: string;
     medium_part: string;
@@ -75,6 +85,7 @@ export type TossupCategory = {
     category: string;
     heard: number;
     conversion_rate: number;
+    superpower_rate: number;
     power_rate: number;
     neg_rate: number;
     average_buzz: number;
@@ -109,6 +120,7 @@ export type BonusDirect = {
     part_two: number;
     part_three: number;
     total: number;
+    which: string;
 }
 
 export type BonusPart = {
@@ -118,11 +130,11 @@ export type BonusPart = {
     answer: string;
     metadata: string;
     value: number;
-    difficulty_modifier: number;
+    difficulty_modifier: string;
 }
 
 export type BuzzDictionary = {
-    [buzz_position:number]: number[]
+    [buzz_position: number]: number[]
 }
 
 export type Word = {
@@ -135,6 +147,7 @@ export type Word = {
 
 export type Round = {
     number: number;
+    packet_id: number;
 }
 
 export type Player = {
@@ -142,7 +155,9 @@ export type Player = {
     name: string;
     slug: string;
     tournament_id: number;
+    team_name: string;
     team_id: number;
+    team_slug: string;
 }
 
 export type Team = {
@@ -150,6 +165,8 @@ export type Team = {
     name: string;
     slug: string;
     tournament_id: number;
+    tournament_name: string;
+    tournament_slug: string;
 }
 
 export type TossupSummary = {
@@ -159,8 +176,10 @@ export type TossupSummary = {
     edition: string;
     round_number: number;
     question_number: number;
-    tuh: number;
+    exact_match: string;
+    heard: number;
     conversation_rate: number;
+    superpower_rate: number;
     power_rate: number;
     neg_rate: number;
     average_buzz: number;

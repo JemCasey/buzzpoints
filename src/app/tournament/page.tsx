@@ -1,14 +1,19 @@
 import { getTournamentsQuery } from "@/utils/queries";
 import Layout from "@/components/Layout";
 import Table from "@/components/Table";
+import { Tournament } from "@/types";
 
 export default function Home() {
-  const tournaments = getTournamentsQuery.all();
+  const tournaments = getTournamentsQuery.all() as Tournament[];
   const columns = [
     {
       key: "name",
       label: "Tournament",
       linkTemplate: "/tournament/{{slug}}"
+    },
+    {
+      key: "question_set_name",
+      label: "Question Set"
     },
     {
       key: "location",
@@ -31,7 +36,7 @@ export default function Home() {
       <Table
         columns={columns}
         data={tournaments}
-         />
+      />
     </Layout>
   );
 }
