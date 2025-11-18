@@ -17,6 +17,10 @@ export default function TeamBonusData({ bonus, mode, slug }: TeamBonusDataProps)
     let difficulties = ["E", "M", "H"];
     const columns = [
         {
+            key: "round",
+            label: "Round"
+        },
+        {
             key: "category",
             label: "Category",
             linkTemplate: `/${mode}/${slug}/category-bonus/{{category_slug}}`,
