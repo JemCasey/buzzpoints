@@ -228,6 +228,7 @@ export const getBonusPartsDirectsByTeamQuery = db.prepare(`
             team.name as team_name,
             opponent.id as opponent_id,
             opponent.name as opponent_name,
+            opponent.slug as opponent_slug,
             question_number,
             category_main AS category,
             category_main_slug AS category_slug,
@@ -257,15 +258,15 @@ export const getBonusPartsDirectsByTeamQuery = db.prepare(`
     JOIN    bonus_part hard_part on bonus.id = hard_part.bonus_id
     AND hard_part.difficulty_modifier = 'h'
     JOIN    game ON round.id = game.round_id
-    JOIN    team ON (team.id = team_one_id)
-    JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
-        OR  (team.id <> team_two_id AND opponent.id = team_two_id)
     LEFT JOIN bonus_part_direct easy_part_direct ON easy_part.id = easy_part_direct.bonus_part_id
         AND	game.id = easy_part_direct.game_id
     LEFT JOIN bonus_part_direct medium_part_direct ON medium_part.id = medium_part_direct.bonus_part_id
         AND	game.id = medium_part_direct.game_id
     LEFT JOIN bonus_part_direct hard_part_direct ON hard_part.id = hard_part_direct.bonus_part_id
         AND	game.id = hard_part_direct.game_id
+    JOIN    team ON easy_part_direct.team_id = team.id
+    JOIN    team opponent ON (team.id <> team_one_id AND opponent.id = team_one_id)
+        OR  (team.id <> team_two_id AND opponent.id = team_two_id)
     WHERE   tournament.id = ?
         AND team.id = ?
         AND (easy_part_direct.value is not null)
