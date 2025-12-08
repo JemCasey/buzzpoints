@@ -51,7 +51,7 @@ export const getTossupForTournamentDetailQuery = db.prepare(`
             question.subcategory,
             question.subsubcategory,
             (
-                SELECT  count(game.id)
+                SELECT  count(distinct game.id)
                 FROM    game
                 JOIN    round ON round_id = round.id
                 JOIN    packet ON round.packet_id = packet.id
@@ -99,7 +99,7 @@ export const getTossupForSetDetailQuery = db.prepare(`
             question.subcategory,
             question.subsubcategory,
             (
-                SELECT  count(game.id)
+                SELECT  count(distinct game.id)
                 FROM    game
                 JOIN    round ON round_id = round.id
                 JOIN    packet ON round.packet_id = packet.id
@@ -1779,11 +1779,55 @@ export const getTossupSummaryBySite = db.prepare(`
             question_set.slug as set_slug,
             question.slug as question_slug,
             'Y' as exact_match,
-            COUNT(distinct game.id) as heard,
-            CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as conversion_rate,
-            CAST(sum(iif(buzz.value = 20, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as superpower_rate,
-            CAST(sum(iif(buzz.value = 15, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as power_rate,
-            CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as neg_rate,
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as heard,
+            CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as conversion_rate,
+            CAST(sum(iif(buzz.value = 20, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as superpower_rate,
+            CAST(sum(iif(buzz.value = 15, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as power_rate,
+            CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as neg_rate,
             AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) as average_buzz
     FROM	tossup
     JOIN	question ON tossup.question_id = question.id
@@ -1812,11 +1856,55 @@ export const getTossupSummaryBySite = db.prepare(`
             question_set.slug as set_slug,
             question.slug as question_slug,
             'N' as exact_match,
-            COUNT(distinct game.id) as heard,
-            CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as conversion_rate,
-            CAST(sum(iif(buzz.value = 20, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as superpower_rate,
-            CAST(sum(iif(buzz.value = 15, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as power_rate,
-            CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) / COUNT(distinct game.id) as neg_rate,
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as heard,
+            CAST(SUM(IIF(buzz.value > 0, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as conversion_rate,
+            CAST(sum(iif(buzz.value = 20, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as superpower_rate,
+            CAST(sum(iif(buzz.value = 15, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as power_rate,
+            CAST(SUM(IIF(buzz.value < 0, 1, 0)) AS FLOAT) /
+            (
+                SELECT  count(distinct game.id)
+                FROM    game
+                JOIN    round ON round_id = round.id
+                JOIN    packet ON round.packet_id = packet.id
+                WHERE   packet_question.packet_id = packet.id
+                    AND packet_question.question_number <= game.tossups_read
+                    AND tournament_id = tournament.id
+            ) as neg_rate,
             AVG(IIF(buzz.value > 0, buzz.buzz_position, NULL)) as average_buzz
     FROM	tossup
     JOIN	question ON tossup.question_id = question.id
