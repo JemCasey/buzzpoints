@@ -18,11 +18,13 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
         }] : []),
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            tooltip: "# of Bonuses Heard",
         },
         {
             key: "ppb",
             label: "PPB",
+            tooltip: "Points per Bonus",
             format: formatDecimal
         },
         ...(mode !== "summary" ? [{
@@ -37,13 +39,14 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.easy_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.easy_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.easy_part_number})`}</span>
                 </>
             )
         }] : []),
         {
             key: "easy_conversion",
             label: mode !== "summary" ? "%" : "E %",
+            tooltip: "Easy Part Conversion Rate (%)",
             format: formatPercent
         },
         ...(mode !== "summary" ? [{
@@ -58,13 +61,14 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.medium_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.medium_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.medium_part_number})`}</span>
                 </>
             )
         }] : []),
         {
             key: "medium_conversion",
             label: mode !== "summary" ? "%" : "M %",
+            tooltip: "Medium Part Conversion Rate (%)",
             format: formatPercent
         },
         ...(mode !== "summary" ? [{
@@ -79,13 +83,14 @@ export function BonusTable({ bonuses, mode }: BonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.hard_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.hard_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.hard_part_number})`}</span>
                 </>
             )
         }] : []),
         {
             key: "hard_conversion",
             label: mode !== "summary" ? "%" : "H %",
+            tooltip: "Hard Part Conversion Rate (%)",
             format: formatPercent
         }
     ];

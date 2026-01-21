@@ -22,9 +22,10 @@ export type Column = {
   defaultDescending?: boolean;
   linkTemplate?: string;
   html?: boolean;
+  tooltip?: string;
   // can only be used if Table is in client-side component
-  format?: (cellValue:any) => string;
-  render?: (item:any) => React.ReactNode;
+  format?: (cellValue: any) => string;
+  render?: (item: any) => React.ReactNode;
 }
 
 type TableProps = {
@@ -34,7 +35,7 @@ type TableProps = {
   noSort?: boolean;
   noHover?: boolean;
   compact?: boolean;
-  rowProperties?: (item:any) => any;
+  rowProperties?: (item: any) => any;
 }
 
 export default function Table({ data, columns, noSort, noHover, compact, rowProperties }: TableProps) {

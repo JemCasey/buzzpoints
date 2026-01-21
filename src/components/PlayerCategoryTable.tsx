@@ -37,6 +37,7 @@ export default function PlayerCategoryTable({ categories, format }: PlayerCatego
         {
             key: "rebounds",
             label: "Rebounds",
+            tooltip: "Gets where opponent negged beforehand",
             defaultDescending: true
         },
         {

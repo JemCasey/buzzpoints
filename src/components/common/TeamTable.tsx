@@ -42,6 +42,7 @@ export function TeamTable({ teams, mode, slug, format, bonuses }: TeamTableProps
         {
             key: "rebounds",
             label: "Rebounds",
+            tooltip: "Gets where opponent negged beforehand",
             defaultDescending: true
         },
         {
@@ -72,27 +73,37 @@ export function TeamTable({ teams, mode, slug, format, bonuses }: TeamTableProps
             [
                 {
                     key: "heard",
-                    label: "Bonuses"
+                    label: "Bonuses",
+                    tooltip: "# of Bonuses Heard",
+                    defaultDescending: true
                 },
                 {
                     key: "ppb",
                     label: "PPB",
-                    format: formatDecimal
+                    tooltip: "Points per Bonus",
+                    format: formatDecimal,
+                    defaultDescending: true,
                 },
                 {
                     key: "easy_conversion",
                     label: "E %",
-                    format: formatPercent
+                    tooltip: "Easy Part Conversion Rate (%)",
+                    format: formatPercent,
+                    defaultDescending: true,
                 },
                 {
                     key: "medium_conversion",
                     label: "M %",
-                    format: formatPercent
+                    tooltip: "Medium Part Conversion Rate (%)",
+                    format: formatPercent,
+                    defaultDescending: true,
                 },
                 {
                     key: "hard_conversion",
                     label: "H %",
-                    format: formatPercent
+                    tooltip: "Medium Part Conversion Rate (%)",
+                    format: formatPercent,
+                    defaultDescending: true
                 }
             ] : []
         )

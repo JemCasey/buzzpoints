@@ -3,7 +3,7 @@
 import { Bonus, BonusDirect } from "@/types";
 import Table from "../Table";
 import Link from "next/link";
-import { shortenAnswerline } from "@/utils";
+import { parseRoundNumber, shortenAnswerline } from "@/utils";
 
 type TeamBonusDataProps = {
     bonus: Bonus[];
@@ -131,6 +131,7 @@ export default function TeamBonusData({ bonus, mode, slug }: TeamBonusDataProps)
             columns={columns}
             data={bonus.map(t => ({
                 ...t,
+                round: parseRoundNumber(t.round),
                 easy_part: shortenAnswerline(t.easy_part),
                 medium_part: shortenAnswerline(t.medium_part),
                 hard_part: shortenAnswerline(t.hard_part),

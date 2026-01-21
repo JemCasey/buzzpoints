@@ -25,7 +25,8 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
         },
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            tooltip: "# of Bonuses Heard",
         },
         {
             key: "ppb",
@@ -44,13 +45,14 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.easy_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.easy_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.easy_part_number})`}</span>
                 </>
             )
         },
         {
             key: "easy_conversion",
             label: "%",
+            tooltip: "Easy Part Conversion Rate (%)",
             format: formatPercent
         },
         {
@@ -65,13 +67,14 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.medium_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.medium_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.medium_part_number})`}</span>
                 </>
             )
         },
         {
             key: "medium_conversion",
             label: "%",
+            tooltip: "Medium Part Conversion Rate (%)",
             format: formatPercent
         },
         {
@@ -86,13 +89,14 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.hard_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.hard_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.hard_part_number})`}</span>
                 </>
             )
         },
         {
             key: "hard_conversion",
             label: "%",
+            tooltip: "Hard Part Conversion Rate (%)",
             format: formatPercent
         }
     ];

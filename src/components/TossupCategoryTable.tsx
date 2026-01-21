@@ -22,11 +22,13 @@ export default function TossupCategoryTable({ tossupCategoryStats, categoryLinks
         },
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            tooltip: "# of Tossups Heard",
         },
         {
             key: "conversion_rate",
             label: "Conv. %",
+            tooltip: "Conversion Rate (%)",
             format: formatPercent
         },
         ...(format === "superpowers" ? [{

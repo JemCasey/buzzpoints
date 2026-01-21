@@ -1,7 +1,7 @@
 "use client";
 
 import Table from "../Table";
-import { formatDecimal, shortenAnswerline } from "@/utils";
+import { formatDecimal, shortenAnswerline, parseRoundNumber } from "@/utils";
 
 type PlayerBuzzTableProps = {
     buzzes: any[];
@@ -14,6 +14,10 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
         {
             key: "round",
             label: "Round",
+        },
+        {
+            key: "packet_descriptor",
+            label: "Packet",
         },
         {
             key: "question_number",
@@ -71,9 +75,10 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
         {
             key: "rebound",
             label: "Rebound",
+            tooltip: "Get where opponent negged beforehand",
             render: (b: any) => (
                 <>
-                    {b.rebound > 0 ? "✓" : "✕"}
+                    {b.rebound > 0 ? "✓" : ""}
                 </>
             )
         }
@@ -84,11 +89,11 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
         columns={columns}
         data={buzzes.map(b => ({
             ...b,
-            answer: shortenAnswerline(b.answer)
+            answer: shortenAnswerline(b.answer),
+            round: parseRoundNumber(b.round)
         }))}
         rowProperties={item => ({
-            className: `${
-                (item.value == 20 ?
+            className: `${(item.value == 20 ?
                     "superpower" :
                     (item.value == 15 ?
                         "power" :
@@ -100,7 +105,7 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
                         )
                     )
                 )
-            }`
+                }`
         })}
     />;
 }
