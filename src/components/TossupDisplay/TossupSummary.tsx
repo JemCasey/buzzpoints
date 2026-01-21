@@ -18,20 +18,22 @@ export default function TossupSummaryFunc({ tossupSummary, tournament, format }:
         {
             key: "edition",
             label: "Edition",
+            tooltip: "Date of the set version used at that mirror",
             defaultSort: "asc" as const,
             linkTemplate: "/set/{{set_slug}}/tossup/{{question_slug}}"
         },
         {
             key: "exact_match",
             label: "Match",
+            tooltip: "Was the version displayed here the version used at that mirror?",
             render: (t: any) => (
                 <>
                     {t.exact_match == "Y" ? "✓" : "✕"}
                 </>
             )
         },
-        { key: "heard", label: "Heard" },
-        { key: "conversion_rate", label: "Conv. %", format: formatPercent },
+        { key: "heard", label: "Heard", tooltip: "# of Tossups Heard", },
+        { key: "conversion_rate", label: "Conv. %", tooltip: "Conversion Rate (%)", format: formatPercent, },
         ...(format === "superpowers" ? [{
             key: "superpower_rate",
             label: "Superpower %",

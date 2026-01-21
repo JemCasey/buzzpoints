@@ -17,23 +17,25 @@ export default function BonusSummaryFunc({ tournament, bonusSummary }: BonusSumm
         {
             key: "edition",
             label: "Edition",
+            tooltip: "Date of the set version used at that mirror",
             defaultSort: "asc" as const,
             linkTemplate: "/set/{{set_slug}}/bonus/{{question_slug}}"
         },
         {
             key: "exact_match",
             label: "Match",
+            tooltip: "Was the version displayed here the version played at that mirror?",
             render: (b: any) => (
                 <>
                     {b.exact_match == "Y" ? "✓" : "✕"}
                 </>
             )
         },
-        { key: "heard", label: "Heard" },
-        { key: "ppb", label: "PPB", format: formatDecimal },
-        { key: "easy_conversion", label: "E %", format: formatPercent },
-        { key: "medium_conversion", label: "M %", format: formatPercent },
-        { key: "hard_conversion", label: "H %", format: formatPercent },
+        { key: "heard", label: "Heard", tooltip: "# of Bonuses Heard", },
+        { key: "ppb", label: "PPB", tooltip: "Points per Bonus", format: formatDecimal },
+        { key: "easy_conversion", label: "E %", tooltip: "Easy Part Conversion Rate (%)", format: formatPercent },
+        { key: "medium_conversion", label: "M %", tooltip: "Medium Part Conversion Rate (%)", format: formatPercent },
+        { key: "hard_conversion", label: "H %", tooltip: "Hard Part Conversion Rate (%)", format: formatPercent },
     ];
 
     return <div className="my-3 mt-3">

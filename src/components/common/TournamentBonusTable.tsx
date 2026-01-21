@@ -2,7 +2,7 @@
 
 import { Bonus } from "@/types";
 import Table from "../Table";
-import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
+import { formatDecimal, formatPercent, parseRoundNumber, shortenAnswerline } from "@/utils";
 import Link from "next/link";
 
 type TournamentBonusTableProps = {
@@ -16,6 +16,10 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
             label: "Round"
         },
         {
+            key: "packet_descriptor",
+            label: "Packet"
+        },
+        {
             key: "question_number",
             label: "#"
         },
@@ -25,7 +29,8 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
         },
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            tooltip: "# of Bonuses Heard",
         },
         {
             key: "ppb",
@@ -44,13 +49,14 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.easy_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.easy_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.easy_part_number})`}</span>
                 </>
             )
         },
         {
             key: "easy_conversion",
             label: "%",
+            tooltip: "Easy Part Conversion Rate (%)",
             format: formatPercent
         },
         {
@@ -65,13 +71,14 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.medium_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.medium_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.medium_part_number})`}</span>
                 </>
             )
         },
         {
             key: "medium_conversion",
             label: "%",
+            tooltip: "Medium Part Conversion Rate (%)",
             format: formatPercent
         },
         {
@@ -86,24 +93,26 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
                     >
                         <span dangerouslySetInnerHTML={{ __html: item.hard_part }}></span>
                     </Link>
-                    <span className="ms-1 text-xs font-light">{`(Part ${item.hard_part_number})`}</span>
+                    <span className="ms-1 text-xs font-light">{`(${item.hard_part_number})`}</span>
                 </>
             )
         },
         {
             key: "hard_conversion",
             label: "%",
+            tooltip: "Hard Part Conversion Rate (%)",
             format: formatPercent
         }
     ];
 
     return <Table
         columns={columns}
-        data={bonuses.map(t => ({
-            ...t,
-            easy_part: shortenAnswerline(t.easy_part),
-            medium_part: shortenAnswerline(t.medium_part),
-            hard_part: shortenAnswerline(t.hard_part),
+        data={bonuses.map(b => ({
+            ...b,
+            round: parseRoundNumber(b.round),
+            easy_part: shortenAnswerline(b.easy_part),
+            medium_part: shortenAnswerline(b.medium_part),
+            hard_part: shortenAnswerline(b.hard_part),
         }))}
         compact
     />

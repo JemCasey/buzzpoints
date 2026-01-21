@@ -2,7 +2,7 @@
 
 import { Tossup } from "@/types";
 import Table from "../Table";
-import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
+import { formatDecimal, formatPercent, parseRoundNumber, shortenAnswerline } from "@/utils";
 
 type TournamentTossupTableProps = {
     tossups: Tossup[];
@@ -14,6 +14,10 @@ export function TournamentTossupTable({ tossups, format }: TournamentTossupTable
         {
             key: "round",
             label: "Round"
+        },
+        {
+            key: "packet_descriptor",
+            label: "Packet"
         },
         {
             key: "question_number",
@@ -32,11 +36,13 @@ export function TournamentTossupTable({ tossups, format }: TournamentTossupTable
         },
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            tooltip: "# of Tossups Heard",
         },
         {
             key: "conversion_rate",
             label: "Conv. %",
+            tooltip: "Conversion Rate (%)",
             format: formatPercent
         },
         ...(format === "superpowers" ? [{
@@ -70,7 +76,8 @@ export function TournamentTossupTable({ tossups, format }: TournamentTossupTable
         columns={columns}
         data={tossups.map(t => ({
             ...t,
-            answer: shortenAnswerline(t.answer)
+            answer: shortenAnswerline(t.answer),
+            round: parseRoundNumber(t.round),
         }))}
     />
 }

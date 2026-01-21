@@ -47,6 +47,7 @@ export function PlayerTable({ players, mode, slug, format }: PlayerTableProps) {
         {
             key: "rebounds",
             label: "Rebounds",
+            tooltip: "Gets where opponent negged beforehand",
             defaultDescending: true
         },
         {

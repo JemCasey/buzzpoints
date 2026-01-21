@@ -265,6 +265,11 @@ rt {
     text-align: left;
   }
 
+  .tooltip {
+    text-decoration: underline dotted;
+    text-underline-offset: .35em;
+  }
+
   table.sortableTable tbody tr.dnc {
     background-color: #424242;
   }

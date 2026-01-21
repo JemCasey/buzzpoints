@@ -40,10 +40,10 @@ export default async function TeamPage(props: { params: Promise<{ slug: string, 
 
     const playerLinks = players.map((x, i, array) =>
         i === array.length - 1
-        ?
-        <span key={i}><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link></span>
-        :
-        <span key={i}><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link> | </span>
+            ?
+            <span key={i}><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link></span>
+            :
+            <span key={i}><Link href={`/tournament/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link> | </span>
     );
 
     return (

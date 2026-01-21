@@ -3,7 +3,7 @@
 import { Bonus, BonusDirect } from "@/types";
 import Table from "../Table";
 import Link from "next/link";
-import { shortenAnswerline } from "@/utils";
+import { parseRoundNumber, shortenAnswerline } from "@/utils";
 
 type TeamBonusDataProps = {
     bonus: Bonus[];
@@ -120,7 +120,7 @@ export default function TeamBonusData({ bonus, mode, slug }: TeamBonusDataProps)
                         bonus.medium_conversion === 10,
                         bonus.hard_conversion === 10
                     ].flatMap((bool, index) => bool ? index : []).map(index => difficulties[index]).join("") || ""
-                    }`}
+                        }`}
                 </>
             )
         }
@@ -129,11 +129,12 @@ export default function TeamBonusData({ bonus, mode, slug }: TeamBonusDataProps)
     return (
         <Table
             columns={columns}
-            data={bonus.map(t => ({
-                ...t,
-                easy_part: shortenAnswerline(t.easy_part),
-                medium_part: shortenAnswerline(t.medium_part),
-                hard_part: shortenAnswerline(t.hard_part),
+            data={bonus.map(b => ({
+                ...b,
+                round: parseRoundNumber(b.round),
+                easy_part: shortenAnswerline(b.easy_part),
+                medium_part: shortenAnswerline(b.medium_part),
+                hard_part: shortenAnswerline(b.hard_part),
             }))}
             rowProperties={item => ({
                 className: `${[

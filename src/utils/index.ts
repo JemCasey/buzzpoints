@@ -5,6 +5,7 @@ export const sanitize = (text: string) => text.replace(/ *\([^)]*\)/g, "").trim(
 export const shortenAnswerline = (answerline: string) => removeBadPunc(answerline.split("[")[0].replace(/ *\([^)]*\)/g, "")).trim();
 export const removeTags = (text: string) => removeBadPunc(text.replace(/(<([^>]+)>)/ig, ""));
 export const removeBadPunc = (text: string) => text.replaceAll(/\&nbsp;/g, " ").replaceAll(/\&amp;/g, "\&");
+export const parseRoundNumber = (round: string | number) => (parseInt(String(round)) % 100 === 0 ? parseInt(String(round)) / 100 : round)
 
 export const formatPercent = (v: any) => v?.toLocaleString("en-US", { style: "percent" });
 export const formatDecimal = (v: any) => v?.toFixed(2);

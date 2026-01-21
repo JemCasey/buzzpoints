@@ -38,7 +38,8 @@ export default function QuestionSetSummary({ questionSets, detailPage, format, b
         {
             key: "conversion_rate",
             label: "Conv. %",
-            format: formatPercent
+            tooltip: "Conversion Rate (%)",
+            format: formatPercent,
         },
         ...(format === "superpowers" ?
             [
@@ -63,7 +64,7 @@ export default function QuestionSetSummary({ questionSets, detailPage, format, b
                 {
                     key: "neg_rate",
                     label: "Neg %",
-                    format: formatPercent
+                    format: formatPercent,
                 }
             ] : []
         ),
@@ -72,22 +73,26 @@ export default function QuestionSetSummary({ questionSets, detailPage, format, b
                 {
                     key: "ppb",
                     label: "PPB",
-                    format: formatDecimal
+                    format: formatDecimal,
+                    tooltip: "Points per Bonus",
                 },
                 {
                     key: "easy_conversion",
                     label: "E %",
-                    format: formatPercent
+                    tooltip: "Easy Part Conversion Rate (%)",
+                    format: formatPercent,
                 },
                 {
                     key: "medium_conversion",
                     label: "M %",
-                    format: formatPercent
+                    tooltip: "Medium Part Conversion Rate (%)",
+                    format: formatPercent,
                 },
                 {
                     key: "hard_conversion",
                     label: "H %",
-                    format: formatPercent
+                    tooltip: "Hard Part Conversion Rate (%)",
+                    format: formatPercent,
                 }
             ] : []
         )

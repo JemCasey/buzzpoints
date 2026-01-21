@@ -19,29 +19,34 @@ export default function TeamCategoryTable({ bonusCategoryStats, mode }: TeamCate
         {
             key: "heard",
             label: "Heard",
+            tooltip: "# of Bonuses Heard",
             defaultDescending: true
         },
         {
             key: "ppb",
             label: "PPB",
+            tooltip: "Points per Bonus",
             format: formatDecimal,
-            defaultDescending: true
+            defaultDescending: true,
         },
         {
             key: "easy_conversion",
             label: "E %",
+            tooltip: "Easy Part Conversion Rate (%)",
             format: formatPercent,
-            defaultDescending: true
+            defaultDescending: true,
         },
         {
             key: "medium_conversion",
             label: "M %",
+            tooltip: "Medium Part Conversion Rate (%)",
             format: formatPercent,
-            defaultDescending: true
+            defaultDescending: true,
         },
         {
             key: "hard_conversion",
             label: "H %",
+            tooltip: "Medium Part Conversion Rate (%)",
             format: formatPercent,
             defaultDescending: true
         }

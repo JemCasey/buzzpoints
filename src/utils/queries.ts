@@ -450,6 +450,10 @@ export const getTournamentBySlugQuery = db.prepare(`
 export const getTossupsByTournamentQuery = db.prepare(`
     SELECT  tossup.id,
             tournament.slug AS tournament_slug,
+            packet.id as packet_id,
+            packet.name as packet_name,
+            packet.descriptor as packet_descriptor,
+            packet.number as packet_number,
             round.number AS round,
             packet_question.question_number,
             tossup.question,
@@ -489,6 +493,9 @@ export const getTossupsByQuestionSetQuery = db.prepare(`
             tossup.answer_primary,
             question_set.slug AS set_slug,
             question.slug AS slug,
+            packet.id AS packet_id,
+            packet.descriptor AS packet_descriptor,
+            packet.name AS packet_name,
             question.category_main AS category,
             (SELECT COUNT(*) FROM packet_question WHERE packet_question.question_id = question.id) AS editions,
             COUNT(DISTINCT IIF(question_number <= tossups_read, game.id, null)) AS heard,
@@ -1571,6 +1578,9 @@ export const getPlayerBuzzesForQuestionSet = db.prepare(`
             question.category_main AS category,
 			question.category_main_slug as category_slug,
 			question.category_full,
+			packet.id as packet_id,
+			packet.name as packet_name,
+			packet.descriptor as packet_descriptor,
 			round.number as round,
 			packet_question.question_number,
 			buzz.buzz_position,
@@ -2041,7 +2051,7 @@ export const getQuestionSetBySlug = (slug: any) => {
 export const getTournamentBySlug = (slug: any) => {
     if (!tournamentDictionary[slug])
         tournamentDictionary[slug] = getTournamentBySlugQuery.get(slug) as Tournament;
-        tournamentDictionary[slug].question_set = getQuestionSetQuery.get(tournamentDictionary[slug].question_set_edition_id) as QuestionSet;
+    tournamentDictionary[slug].question_set = getQuestionSetQuery.get(tournamentDictionary[slug].question_set_edition_id) as QuestionSet;
 
     return tournamentDictionary[slug] as Tournament;
 }

@@ -15,6 +15,10 @@ export function TossupTable({ tossups, format }: TossupTableProps) {
             key: "category",
             label: "Category"
         },
+        // {
+        //     key: "packet_descriptor",
+        //     label: "Packet",
+        // },
         {
             key: "answer",
             label: "Answer",
@@ -24,11 +28,13 @@ export function TossupTable({ tossups, format }: TossupTableProps) {
         },
         {
             key: "heard",
-            label: "Heard"
+            label: "Heard",
+            tooltip: "# of Tossups Heard",
         },
         {
             key: "conversion_rate",
             label: "Conv. %",
+            tooltip: "Conversion Rate (%)",
             format: formatPercent
         },
         ...(format === "superpowers" ? [{
