@@ -450,6 +450,10 @@ export const getTournamentBySlugQuery = db.prepare(`
 export const getTossupsByTournamentQuery = db.prepare(`
     SELECT  tossup.id,
             tournament.slug AS tournament_slug,
+            packet.id as packet_id,
+            packet.name as packet_name,
+            packet.descriptor as packet_descriptor,
+            packet.number as packet_number,
             round.number AS round,
             packet_question.question_number,
             tossup.question,

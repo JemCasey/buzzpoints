@@ -2,7 +2,7 @@
 
 import { Bonus } from "@/types";
 import Table from "../Table";
-import { formatDecimal, formatPercent, shortenAnswerline } from "@/utils";
+import { formatDecimal, formatPercent, parseRoundNumber, shortenAnswerline } from "@/utils";
 import Link from "next/link";
 
 type TournamentBonusTableProps = {
@@ -14,6 +14,10 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
         {
             key: "round",
             label: "Round"
+        },
+        {
+            key: "packet_descriptor",
+            label: "Packet"
         },
         {
             key: "question_number",
@@ -103,11 +107,12 @@ export function TournamentBonusTable({ bonuses }: TournamentBonusTableProps) {
 
     return <Table
         columns={columns}
-        data={bonuses.map(t => ({
-            ...t,
-            easy_part: shortenAnswerline(t.easy_part),
-            medium_part: shortenAnswerline(t.medium_part),
-            hard_part: shortenAnswerline(t.hard_part),
+        data={bonuses.map(b => ({
+            ...b,
+            round: parseRoundNumber(b.round),
+            easy_part: shortenAnswerline(b.easy_part),
+            medium_part: shortenAnswerline(b.medium_part),
+            hard_part: shortenAnswerline(b.hard_part),
         }))}
         compact
     />

@@ -87,24 +87,24 @@ export function PlayerBuzzTable({ buzzes, mode, slug }: PlayerBuzzTableProps) {
     return <Table
         compact
         columns={columns}
-        data={buzzes.map(b => ({
-            ...b,
-            answer: shortenAnswerline(b.answer),
-            round: parseRoundNumber(b.round)
+        data={buzzes.map(bz => ({
+            ...bz,
+            answer: shortenAnswerline(bz.answer),
+            round: parseRoundNumber(bz.round),
         }))}
         rowProperties={item => ({
             className: `${(item.value == 20 ?
-                    "superpower" :
-                    (item.value == 15 ?
-                        "power" :
-                        (item.value > 0 ?
-                            "get" :
-                            (item.value < 0 ?
-                                "neg" :
-                                "dnc")
-                        )
+                "superpower" :
+                (item.value == 15 ?
+                    "power" :
+                    (item.value > 0 ?
+                        "get" :
+                        (item.value < 0 ?
+                            "neg" :
+                            "dnc")
                     )
                 )
+            )
                 }`
         })}
     />;
