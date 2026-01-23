@@ -60,6 +60,20 @@ The easiest way to share your buzzpoints publicly is to create an online web app
 
 See the [Vercel documentation](https://vercel.com/docs/frameworks/nextjs) for any clarification on instructions. You may have to modify the Node.js version of the build to be `20.x` in the package (since this is what the package uses).
 
+## Optional HTTP Basic Auth
+
+If you would like to require a password before anyone can access your site, you can turn on HTTP Basic Auth via an environment variable.
+
+1. For local testing, you can set the following environment value in your shell before starting the app:
+
+   ```bash
+   export BASIC_AUTH_PASSWORD=your-strong-password
+   ```
+
+2. For your Vercel app, you can set the environment variable by following [this documentation](https://vercel.com/docs/environment-variables)
+
+Basic Auth protection is only enabled when `BASIC_AUTH_PASSWORD` is set. When prompted by the browser, leave the username blank and enter the password. When the variable is unset, users will be able to access the site directly with no authentication.
+
 ### Next.js
 
 Buzzpoints is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
