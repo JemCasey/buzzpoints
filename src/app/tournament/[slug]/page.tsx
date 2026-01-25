@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getTournamentBySlug, getBonusCategoryStatsQuery, getTossupCategoryStatsQuery, getTournamentsQuery, getQuestionSetQuery, getQuestionSetBySlug } from "@/utils/queries";
+import { getTournamentBySlug, getBonusCategoryStatsQuery, getTossupCategoryStatsQuery, getTournamentsQuery } from "@/utils/queries";
 import { TossupCategory, BonusCategory, Tournament } from "@/types";
 import TournamentSummary from "@/components/TournamentSummary";
 import TossupCategoryTable from "@/components/TossupCategoryTable";
