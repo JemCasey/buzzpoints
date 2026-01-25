@@ -95,7 +95,7 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
                     <div className="ml-4 flex items-center md:ml-6">
                     </div>
                 </div>
-                <div className="-mr-2 flex md:hidden">
+                {menuItems.length > 0 && <div className="-mr-2 flex md:hidden">
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
                         type="button"
@@ -105,7 +105,7 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                </div>
+                </div>}
             </div>
         </div>
         {menuOpen && <div className="md:hidden">
