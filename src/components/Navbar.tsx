@@ -19,11 +19,10 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
     const entity = (tournament || questionSet) as Tournament | QuestionSet | undefined;
     const setName = tournament ? tournament.question_set.name : "";
 
-    mainButtons.push(...[
-        { label: entity ? "Home" : "Buzzpoints", url: "/" },
-    ]);
-
     if (entity) {
+        mainButtons.push(...[
+            { label: "Home", url: "/" },
+        ]);
         let bonuses: boolean = true;
         if (tournament) {
             bonuses = tournament.question_set.bonuses;
