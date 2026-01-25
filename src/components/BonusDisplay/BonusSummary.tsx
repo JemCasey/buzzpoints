@@ -17,7 +17,7 @@ export default function BonusSummaryFunc({ tournament, bonusSummary }: BonusSumm
         {
             key: "edition",
             label: "Edition",
-            tooltip: "Date of the set version used at that mirror",
+            tooltip: "Date or ID of the set version used at that mirror",
             defaultSort: "asc" as const,
             linkTemplate: "/set/{{set_slug}}/bonus/{{question_slug}}"
         },
