@@ -81,7 +81,7 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
                         </div>
                     </div>
                     <div className="hidden md:block">
-                        <div className="flex items-baseline space-x-4">
+                        <div className="flex items-center space-x-4">
                             {menuItems.map(({ url, label }, i) => (
                                 <Link
                                     key={i}
