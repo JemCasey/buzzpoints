@@ -1,6 +1,6 @@
 "use client";
 
-import { Bonus, QuestionSet, Tournament } from "@/types";
+import { QuestionSet, Tournament } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation"
@@ -20,7 +20,7 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
     const setName = tournament ? tournament.question_set.name : "";
 
     mainButtons.push(...[
-        { label: entity ? "Home" : "Buzzpoints", url: "/" },
+        { label: "Home", url: "/" },
     ]);
 
     if (entity) {
@@ -66,22 +66,20 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
     return <nav className="bg-gray-500 sticky">
         <div className="min-w-screen mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-                <div className="flex items-center">
-                    <div className="flex-shrink-0 mr-5">
-                        <div>
-                            {mainButtons.map(({ url, label }, i) => (
-                                <Link
-                                    key={i}
-                                    className="text-white font-bold px-4 py-2"
-                                    href={url}
-                                >
-                                    {label}
-                                </Link>
-                            ))}
-                        </div>
+                <div className="flex items-center overflow-x-auto h-full">
+                    <div className="flex-shrink-0 md:mr-5 h-full flex items-center">
+                        {mainButtons.map(({ url, label }, i) => (
+                            <Link
+                                key={i}
+                                className="text-white font-bold px-4 py-2"
+                                href={url}
+                            >
+                                {label}
+                            </Link>
+                        ))}
                     </div>
                     <div className="hidden md:block">
-                        <div className="flex items-baseline space-x-4">
+                        <div className="flex items-center space-x-4">
                             {menuItems.map(({ url, label }, i) => (
                                 <Link
                                     key={i}
@@ -98,7 +96,7 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
                     <div className="ml-4 flex items-center md:ml-6">
                     </div>
                 </div>
-                <div className="-mr-2 flex md:hidden">
+                {menuItems.length > 0 && <div className="-mr-2 flex md:hidden">
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
                         type="button"
@@ -108,7 +106,7 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                </div>
+                </div>}
             </div>
         </div>
         {menuOpen && <div className="md:hidden">
