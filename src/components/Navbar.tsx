@@ -66,19 +66,17 @@ export default function Navbar({ tournament, questionSet }: NavbarProps) {
     return <nav className="bg-gray-500 sticky">
         <div className="min-w-screen mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-                <div className="flex items-center">
+                <div className="flex items-center overflow-x-auto">
                     <div className="flex-shrink-0 mr-5">
-                        <div>
-                            {mainButtons.map(({ url, label }, i) => (
-                                <Link
-                                    key={i}
-                                    className="text-white font-bold px-4 py-2"
-                                    href={url}
-                                >
-                                    {label}
-                                </Link>
-                            ))}
-                        </div>
+                        {mainButtons.map(({ url, label }, i) => (
+                            <Link
+                                key={i}
+                                className="text-white font-bold px-4 py-2"
+                                href={url}
+                            >
+                                {label}
+                            </Link>
+                        ))}
                     </div>
                     <div className="hidden md:block">
                         <div className="flex items-center space-x-4">
