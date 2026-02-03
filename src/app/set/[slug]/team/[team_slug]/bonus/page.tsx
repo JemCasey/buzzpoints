@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import { Metadata } from "next";
-import { getPlayersByTeamAndTournamentQuery, getQuestionSetsQuery, getTeamsByQuestionSetQuery, getQuestionSetBySlug,getBonusPartsDirectsByTeamQuery } from "@/utils/queries";
-import { BonusCategory, Team, Tournament, Player, QuestionSet, BonusPart, BonusDirect, Bonus } from "@/types";
+import { getPlayersByTeamAndTournamentQuery, getQuestionSetsQuery, getTeamsByQuestionSetQuery, getQuestionSetBySlug, getBonusPartsDirectsByTeamQuery } from "@/utils/queries";
+import { Team, Player, QuestionSet, Bonus } from "@/types";
 import TeamBonusTable from "@/components/common/TeamBonusTable";
 
 export async function generateStaticParams() {
@@ -44,10 +44,10 @@ export default async function TeamPage(props: { params: Promise<{ slug: string, 
 
     const playerLinks = players.map((x, i, array) =>
         i === array.length - 1
-        ?
-        <span key={i}><Link href={`/set/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link></span>
-        :
-        <span key={i}><Link href={`/set/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link> | </span>
+            ?
+            <span key={i}><Link href={`/set/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link></span>
+            :
+            <span key={i}><Link href={`/set/${params.slug}/player/${x?.slug}`} className="underline">{x.name}</Link> | </span>
     );
 
     return (

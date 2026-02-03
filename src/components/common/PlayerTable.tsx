@@ -2,9 +2,29 @@
 
 import Table from "../Table";
 import { formatDecimal } from "@/utils";
+import { Tossup } from "@/types";
+import { Namefully } from "namefully";
+
+// Temporary workaround for mononym
+// https://github.com/ralflorent/namefully/issues/21
+function fixMononym(str: string, temp: string = str, before: boolean = false) {
+    // Use a regular expression to check for any whitespace character (space, tab, newline, etc.)
+    const containsWhitespace = /\s/.test(str);
+
+    if (!containsWhitespace) {
+        // If no whitespace is found, it's a single word. Append the string to itself.
+        // Use the += operator for a concise solution.
+        if (before) {
+            str = temp + " " + str;
+        } else {
+            str += " " + temp;
+        }
+    }
+    return str;
+}
 
 type PlayerTableProps = {
-    players: any[];
+    players: Tossup[];
     mode?: "tournament" | "set";
     slug?: string;
     format?: string;
@@ -79,6 +99,9 @@ export function PlayerTable({ players, mode, slug, format }: PlayerTableProps) {
     return <Table
         compact
         columns={columns}
-        data={players}
+        data={players.map(p => ({
+            ...p,
+            name: new Namefully(fixMononym(p.name, "‎")).format("l, f m")
+        }))}
     />
 }
